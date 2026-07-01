@@ -15,7 +15,6 @@ try
 			end repeat
 
 			-- Open Portable Preferences
-			click button "Set Up..."
 			click UI Element 10 of splitter group 1 of window "VoiceOver Utility"
 
 			delay 0.5
