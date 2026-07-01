@@ -6,6 +6,14 @@ end tell
 
 tell application "System Events"
 	tell process "VoiceOver Utility"
+		set uiContents to entire contents of window 1
+	end tell
+end tell
+
+log uiContents
+
+tell application "System Events"
+	tell process "VoiceOver Utility"
 		log (entire contents of window 1)
 	end tell
 end tell
@@ -20,7 +28,7 @@ tell application "System Events"
 		end repeat
 
 		-- Open Portable Preferences
-		click button "Portable Preferences" of toolbar 1 of window 1
+		click button "Set Up…" of splitter group 1 of window 1
 
 		delay 0.5
 
@@ -33,14 +41,18 @@ tell application "System Events"
 		end repeat
 
 		tell sheet 1 of window 1
-			-- Select mounted volume
-			select row 1 of outline 1 of scroll area 1
+			tell table 1 of scroll area 1 of group 1
+				repeat with r in rows
+					if exists static text "VoiceOverPreferences" of r then
+						select r
+						exit repeat
+					end if
+				end repeat
+			end tell
 
-			-- If multiple volumes are shown, replace the line above with:
-			-- select (first row of outline 1 of scroll area 1 whose value of text field 1 is "VoiceOverPreferences")
-
-			click button "Choose"
+			click button "OK"
 		end tell
+
 
 		-- Wait for setup to finish
 		repeat while exists sheet 1 of window 1
