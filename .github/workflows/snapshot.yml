@@ -54,7 +54,7 @@ jobs:
       - name: List snapshot
         continue-on-error: true
         run: |
-          ls -la ${{ matrix.os }}/voiceover
+          ls -la /Volumes/VoiceOverPreferences/
 
       - name: Copy snapshot
         run: |
