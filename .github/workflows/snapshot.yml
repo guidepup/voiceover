@@ -37,7 +37,7 @@ jobs:
           sleep 1
 
           # Portable Preferences
-          /usr/bin/osascript start-portable-preferences.applescript
+          /usr/bin/osascript start-portable-preferences.applescript || true
 
           # Debug Screenshot
           mkdir -p artifacts
