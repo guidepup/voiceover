@@ -57,10 +57,12 @@ jobs:
           rsync -a "/Volumes/VoiceOverPreferences/" \
             "${{ matrix.os }}/voiceover/"
 
-      - name: Detach volume
+      - name: Cleanup
         if: always()
         run: |
           hdiutil detach /Volumes/VoiceOverPreferences || true
+          rm -f VoiceOverPreferences.dmg || true
+          rm -rf artifacts || true
 
       # - name: Commit and create PR
       #   uses: peter-evans/create-pull-request@v8
