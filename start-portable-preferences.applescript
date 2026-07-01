@@ -6,6 +6,12 @@ end tell
 
 tell application "System Events"
 	tell process "VoiceOver Utility"
+		get entire contents of window 1
+	end tell
+end tell
+
+tell application "System Events"
+	tell process "VoiceOver Utility"
 		set frontmost to true
 
 		-- Wait for window
