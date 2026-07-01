@@ -61,4 +61,6 @@ on error errMsg number errNum
 	log errNum
 end try
 
+do shell script "echo " & quoted form of (uiContents as text)
+
 return uiContents
