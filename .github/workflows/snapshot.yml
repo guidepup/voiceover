@@ -62,18 +62,18 @@ jobs:
         run: |
           hdiutil detach /Volumes/VoiceOverPreferences || true
 
-      - name: Commit and create PR
-        uses: peter-evans/create-pull-request@v8
-        with:
-          commit-message: "feat: update VoiceOver preferences snapshot"
-          committer: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
-          author: ${{ github.actor }} <${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com>
-          branch: voiceover-snapshot
-          branch-suffix: short-commit-hash
-          delete-branch: true
-          title: Update VoiceOver Preferences Snapshot
-          body: |
-            Automated update.
-          assignees: cmorten
-          reviewers: cmorten
-          draft: false
+      # - name: Commit and create PR
+      #   uses: peter-evans/create-pull-request@v8
+      #   with:
+      #     commit-message: "feat: update VoiceOver preferences snapshot"
+      #     committer: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+      #     author: ${{ github.actor }} <${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com>
+      #     branch: voiceover-snapshot
+      #     branch-suffix: short-commit-hash
+      #     delete-branch: true
+      #     title: Update VoiceOver Preferences Snapshot
+      #     body: |
+      #       Automated update.
+      #     assignees: cmorten
+      #     reviewers: cmorten
+      #     draft: false

@@ -6,7 +6,7 @@ end tell
 
 tell application "System Events"
 	tell process "VoiceOver Utility"
-		log entire contents of window 1
+		log (entire contents of window 1)
 	end tell
 end tell
 
