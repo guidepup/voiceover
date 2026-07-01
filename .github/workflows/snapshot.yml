@@ -58,9 +58,10 @@ jobs:
 
       - name: Copy snapshot
         run: |
-          mkdir -p ${{ matrix.os }}/voiceover
-          rsync -a "/Volumes/VoiceOverPreferences/" \
-            "${{ matrix.os }}/voiceover/"
+          mkdir -p ${{ matrix.os }}/VoiceOver
+          rsync -a \
+            /Volumes/VoiceOverPreferences/VoiceOver/ \
+            ${{ matrix.os }}/VoiceOver/
 
       - name: Cleanup
         if: always()
