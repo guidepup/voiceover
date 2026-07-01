@@ -23,7 +23,6 @@ jobs:
             -size 10m \
             -fs APFS \
             -volname VoiceOverPreferences \
-            -format UDRW \
             -ov \
             VoiceOverPreferences.dmg
 
