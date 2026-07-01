@@ -23,12 +23,9 @@ try
 			end repeat
 
 			-- Open Portable Preferences
-			click button "Set Up..." of splitter group 1 of window 1
+			click button "Set Up..."
 
 			delay 0.5
-
-			-- Set up portable preferences
-			click button "Set Up Portable Preferences…" of window 1
 
 			-- Wait for sheet
 			repeat until exists sheet 1 of window 1
