@@ -16,6 +16,7 @@ try
 
 			-- Open Portable Preferences
 			click button "Set Up..."
+			click UI Element 10 of splitter group 1 of window "VoiceOver Utility"
 
 			delay 0.5
 
@@ -25,7 +26,7 @@ try
 			end repeat
 
 			tell sheet 1 of window 1
-				tell table 1 of scroll area 1 of group 1
+				tell table 1 of scroll area 1
 					repeat with r in rows
 						if exists static text "VoiceOverPreferences" of r then
 							select r
@@ -34,7 +35,7 @@ try
 					end repeat
 				end tell
 
-				click button "OK"
+				click UI Element "OK"
 			end tell
 
 
