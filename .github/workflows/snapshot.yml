@@ -32,16 +32,9 @@ jobs:
 
       - name: Configure portable preferences
         run: |
-          # Disable splash screen
-          defaults write com.apple.VoiceOverTraining doNotShowSplashScreen -bool true
-          sleep 1
-
-          # Portable Preferences
           /usr/bin/osascript start-portable-preferences.applescript || true
-
-          # Debug Screenshot
-          mkdir -p artifacts
-          screencapture artifacts/finished.png
+          mkdir -p artifacts || true
+          screencapture artifacts/finished.png || true
 
       - uses: actions/upload-artifact@v4
         if: always()
@@ -51,14 +44,9 @@ jobs:
           path: |
             **/artifacts/**/*
 
-      - name: List snapshot
-        continue-on-error: true
-        run: |
-          ls -la /Volumes/VoiceOverPreferences/
-
       - name: Copy snapshot
         run: |
-          mkdir -p ${{ matrix.os }}/VoiceOver
+          mkdir -p ${{ matrix.os }}/VoiceOver/ || true
           rsync -a \
             /Volumes/VoiceOverPreferences/VoiceOver/ \
             ${{ matrix.os }}/VoiceOver/
