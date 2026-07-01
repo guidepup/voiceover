@@ -1,0 +1,76 @@
+name: Snapshot
+
+on:
+  workflow_dispatch:
+
+jobs:
+  snapshot:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-14, macos-15, macos-26]
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Create DMG
+        run: |
+          hdiutil create \
+            -size 10m \
+            -fs APFS \
+            -volname VoiceOverPreferences \
+            -format UDRW \
+            -ov \
+            VoiceOverPreferences.dmg
+
+      - name: Attach DMG
+        run: |
+          hdiutil attach VoiceOverPreferences.dmg
+
+      - name: Configure portable preferences
+      - run: |
+          # Disable splash screen
+          defaults write com.apple.VoiceOverTraining doNotShowSplashScreen -bool true
+          sleep 1
+
+          # Portable Preferences
+          /usr/bin/osascript start-portable-preferences.applescript
+
+          # Debug Screenshot
+          mkdir -p artifacts
+          screencapture artifacts/finished.png
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        continue-on-error: true
+        with:
+          name: artifacts-${{ matrix.os }}
+          path: |
+            **/artifacts/**/*
+
+      - name: Copy snapshot
+        run: |
+          mkdir -p ${{ matrix.os }}/voiceover
+          rsync -a "/Volumes/VoiceOverPreferences/" \
+            "${{ matrix.os }}/voiceover/"
+
+      - name: Detach
+        if: always()
+        run: |
+          hdiutil detach /Volumes/VoiceOverPreferences || true
+
+      - name: Commit and create PR
+        uses: peter-evans/create-pull-request@v8
+        with:
+          commit-message: "feat: update VoiceOver preferences snapshot"
+          committer: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+          author: ${{ github.actor }} <${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com>
+          branch: voiceover-snapshot
+          branch-suffix: short-commit-hash
+          delete-branch: true
+          title: Update VoiceOver Preferences Snapshot
+          body: |
+            Automated update.
+          assignees: cmorten
+          reviewers: cmorten
+          draft: false
