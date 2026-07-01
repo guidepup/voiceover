@@ -15,7 +15,7 @@ try
 			end repeat
 
 			-- Open Portable Preferences
-			click UI Element "Set Up"
+			click UI Element "Set Up..." of splitter group 1 of window "VoiceOver Utility"
 		end tell
 	end tell
 on error errMsg number errNum
