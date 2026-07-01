@@ -4,14 +4,6 @@ tell application "VoiceOver Utility"
 	activate
 end tell
 
-tell application "System Events"
-	tell process "VoiceOver Utility"
-		set uiContents to entire contents of window 1
-	end tell
-end tell
-
-log uiContents
-
 try
 	tell application "System Events"
 		tell process "VoiceOver Utility"
@@ -60,7 +52,3 @@ on error errMsg number errNum
 	log errMsg
 	log errNum
 end try
-
-do shell script "echo " & quoted form of (uiContents as text)
-
-return uiContents
