@@ -1,7 +1,11 @@
-name: Snapshot
+name: Snapshot VoiceOver
 
 on:
   workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
 
 jobs:
   snapshot:
@@ -28,7 +32,7 @@ jobs:
           hdiutil attach VoiceOverPreferences.dmg
 
       - name: Configure portable preferences
-      - run: |
+        run: |
           # Disable splash screen
           defaults write com.apple.VoiceOverTraining doNotShowSplashScreen -bool true
           sleep 1
@@ -54,7 +58,7 @@ jobs:
           rsync -a "/Volumes/VoiceOverPreferences/" \
             "${{ matrix.os }}/voiceover/"
 
-      - name: Detach
+      - name: Detach volume
         if: always()
         run: |
           hdiutil detach /Volumes/VoiceOverPreferences || true
