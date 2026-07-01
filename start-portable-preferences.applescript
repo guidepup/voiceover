@@ -12,55 +12,56 @@ end tell
 
 log uiContents
 
-tell application "System Events"
-	tell process "VoiceOver Utility"
-		log (entire contents of window 1)
-	end tell
-end tell
+try
+	tell application "System Events"
+		tell process "VoiceOver Utility"
+			set frontmost to true
 
-tell application "System Events"
-	tell process "VoiceOver Utility"
-		set frontmost to true
+			-- Wait for window
+			repeat until exists window 1
+				delay 0.2
+			end repeat
 
-		-- Wait for window
-		repeat until exists window 1
-			delay 0.2
-		end repeat
+			-- Open Portable Preferences
+			click button "Set Up..." of splitter group 1 of window 1
 
-		-- Open Portable Preferences
-		click button "Set Up…" of splitter group 1 of window 1
+			delay 0.5
 
-		delay 0.5
+			-- Set up portable preferences
+			click button "Set Up Portable Preferences…" of window 1
 
-		-- Set up portable preferences
-		click button "Set Up Portable Preferences…" of window 1
+			-- Wait for sheet
+			repeat until exists sheet 1 of window 1
+				delay 0.2
+			end repeat
 
-		-- Wait for sheet
-		repeat until exists sheet 1 of window 1
-			delay 0.2
-		end repeat
+			tell sheet 1 of window 1
+				tell table 1 of scroll area 1 of group 1
+					repeat with r in rows
+						if exists static text "VoiceOverPreferences" of r then
+							select r
+							exit repeat
+						end if
+					end repeat
+				end tell
 
-		tell sheet 1 of window 1
-			tell table 1 of scroll area 1 of group 1
-				repeat with r in rows
-					if exists static text "VoiceOverPreferences" of r then
-						select r
-						exit repeat
-					end if
-				end repeat
+				click button "OK"
 			end tell
 
-			click button "OK"
+
+			-- Wait for setup to finish
+			repeat while exists sheet 1 of window 1
+				delay 0.5
+			end repeat
+
+			delay 2
+
+			quit
 		end tell
-
-
-		-- Wait for setup to finish
-		repeat while exists sheet 1 of window 1
-			delay 0.5
-		end repeat
-
-		delay 2
-
-		quit
 	end tell
-end tell
+on error errMsg number errNum
+	log errMsg
+	log errNum
+end try
+
+return uiContents
