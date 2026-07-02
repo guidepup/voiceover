@@ -19,6 +19,10 @@ jobs:
         run: |
           ls -la "$HOME/Library/Preferences/" || true
 
+      - name: Group Containers List
+        run: |
+          ls -la "$HOME/Library/Group Containers/" || true
+
       - name: com.apple.VoiceOver4/default.plist
         run: |
           plutil -convert xml1 -o - "$HOME/Library/Preferences/com.apple.VoiceOver4/default.plist" || true
