@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>SCRCategories_SCRCategorySystemWide_SCRSoundComponentSettings_SCRDisableSound</key>
+	<true/>
+	<key>SCRCategories_SCRCategorySystemWide_SCRSpeechComponentSettings_SCRDisableSpeech</key>
+	<true/>
+	<key>SCRCategories_SCRCategorySystemWide_SCRSpeechLanguages_defaultValue_SCRSpeechComponentSettings_SCRRateAsPercent</key>
+	<integer>100</integer>
+	<key>SCRDisplayTextEnabled</key>
+	<true/>
+	<key>SCRVoiceOverCursorEnabled</key>
+	<true/>
+	<key>loginGreeting</key>
+	<string></string>
+</dict>
+</plist>

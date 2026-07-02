@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>SCRCUserDefaultsAllowAirPlay</key>
+	<true/>
+	<key>SCRCUserDefaultsAlwaysUsePortableIDs</key>
+	<array>
+		<string>uuid-username</string>
+	</array>
+	<key>SCRCUserDefaultsPlannedShutdownSuccessful</key>
+	<true/>
+	<key>SCRCUserDefaultsUnplannedShutdownCount</key>
+	<integer>0</integer>
+	<key>SCREnableAppleScript</key>
+	<true/>
+	<key>lastTouchedKey</key>
+	<string>uuid-username</string>
+	<key>portablePreferenceKeys</key>
+	<array>
+		<string>uuid-username</string>
+	</array>
+</dict>
+</plist>
