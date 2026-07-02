@@ -47,6 +47,8 @@ jobs:
         run: |
           defaults write com.apple.VoiceOver4/default SCRContextualHelpDelayInSeconds -int 1.0 || true
 
+      - uses: actions/checkout@v6
+
       - name: Open & Close VoiceOver VoiceOver Utility
         run: |
           mkdir -p artifacts || true
