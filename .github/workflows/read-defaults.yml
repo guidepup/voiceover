@@ -15,6 +15,41 @@ jobs:
         os: [macos-14, macos-15, macos-26]
 
     steps:
+      - name: Disable Splash
+        run: |
+          defaults write com.apple.VoiceOverTraining doNotShowSplashScreen -bool true || true
+
+      - name: Enable AppleScript Control
+        run: |
+          defaults write com.apple.VoiceOver4/default SCREnableAppleScript -bool true || true
+
+      - name: Disable Automatically Speaking Web Page
+        run: |
+          defaults write com.apple.VoiceOver4/default SCRCUserDefaultsAutomaticallySpeakWebPage -bool false || true
+
+      - name: Start & Stop VoiceOver
+        run: |
+          /System/Library/CoreServices/VoiceOver.app/Contents/MacOS/VoiceOverStarter &
+
+          sleep 5
+
+          mkdir -p artifacts || true
+          screencapture artifacts/started.png || true
+
+          kill -15 $(ps aux | egrep "[V]oiceOver.app/Contents/MacOS/VoiceOver launchd -s" | awk '{print $2}')
+
+          sleep 5
+
+          screencapture artifacts/stopped.png || true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        continue-on-error: true
+        with:
+          name: artifacts-${{ matrix.os }}
+          path: |
+            **/artifacts/**/*
+
       - name: Preferences List
         run: |
           ls -la "$HOME/Library/Preferences/" || true
@@ -22,6 +57,10 @@ jobs:
       - name: Group Containers List
         run: |
           ls -la "$HOME/Library/Group Containers/" || true
+
+      - name: Accessibility List
+        run: |
+          ls -la "/private/var/db/Accessibility/" || true
 
       - name: com.apple.VoiceOver4/default.plist
         run: |
