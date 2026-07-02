@@ -63,6 +63,9 @@ jobs:
           ls -la "$HOME/Library/Group Containers/" || true
           ls -la "$HOME/Library/Group Containers/group.com.apple.VoiceOver" || true
           ls -la "$HOME/Library/Group Containers/group.com.apple.VoiceOver/Library/" || true
+          ls -la "$HOME/Library/Group Containers/group.com.apple.VoiceOver/Library/Application Scripts" || true
+          ls -la "$HOME/Library/Group Containers/group.com.apple.VoiceOver/Library/Application Support" || true
+          ls -la "$HOME/Library/Group Containers/group.com.apple.VoiceOver/Library/Caches" || true
           ls -la "$HOME/Library/Group Containers/group.com.apple.VoiceOver/Library/Preferences/" || true
           ls -la "$HOME/Library/Group Containers/group.com.apple.VoiceOver/Library/Preferences/com.apple.VoiceOver4/" || true
 
@@ -107,3 +110,11 @@ jobs:
       - name: group.com.apple.VoiceOver/Library/Preferences/com.apple.VoiceOver4/default.plist
         run: |
           plutil -convert xml1 -o - "$HOME/Library/Group Containers/group.com.apple.VoiceOver/Library/Preferences/com.apple.VoiceOver4/default.plist" || true
+
+      - name: group.com.apple.VoiceOver/Library/Preferences/com.apple.VoiceOver4.local.plist
+        run: |
+          plutil -convert xml1 -o - "$HOME/Library/Group Containers/group.com.apple.VoiceOver/Library/Preferences/com.apple.VoiceOver4.local.plist" || true
+
+      - name: group.com.apple.VoiceOver/.com.apple.containermanagerd.metadata.plist
+        run: |
+          plutil -convert xml1 -o - "$HOME/Library/Group Containers/group.com.apple.VoiceOver/.com.apple.containermanagerd.metadata.plist" || true
