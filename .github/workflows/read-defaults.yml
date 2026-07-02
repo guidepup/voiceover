@@ -1,0 +1,53 @@
+name: Read VoiceOver Group Container
+
+on:
+  workflow_dispatch:
+
+jobs:
+  read-15:
+    runs-on: macos-15
+
+    steps:
+      - name: Locate VoiceOver preferences
+        run: |
+          PREF="$HOME/Library/Group Containers/group.com.apple.VoiceOver/Library/Preferences/com.apple.VoiceOver4/default.plist"
+
+          echo "Checking: $PREF"
+
+          if [ -f "$PREF" ]; then
+            echo "✅ File exists"
+            ls -l "$PREF"
+          else
+            echo "❌ File not found"
+            exit 1
+          fi
+
+      - name: Output plist
+        run: |
+          PREF="$HOME/Library/Group Containers/group.com.apple.VoiceOver/Library/Preferences/com.apple.VoiceOver4/default.plist"
+
+          plutil -convert xml1 -o - "$PREF"
+
+  read-26:
+    runs-on: macos-26
+
+    steps:
+      - name: Locate VoiceOver preferences
+        run: |
+          PREF="$HOME/Library/Group Containers/group.com.apple.VoiceOver/Library/Preferences/com.apple.VoiceOver4/default.plist"
+
+          echo "Checking: $PREF"
+
+          if [ -f "$PREF" ]; then
+            echo "✅ File exists"
+            ls -l "$PREF"
+          else
+            echo "❌ File not found"
+            exit 1
+          fi
+
+      - name: Output plist
+        run: |
+          PREF="$HOME/Library/Group Containers/group.com.apple.VoiceOver/Library/Preferences/com.apple.VoiceOver4/default.plist"
+
+          plutil -convert xml1 -o - "$PREF"
