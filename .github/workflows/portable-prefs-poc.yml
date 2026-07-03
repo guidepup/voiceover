@@ -19,6 +19,36 @@ jobs:
       - name: Setup OS for VO automation
         uses: guidepup/setup-action@0.21.0
 
+      - name: Disable Splash
+        run: |
+          defaults write com.apple.VoiceOverTraining doNotShowSplashScreen -bool true || true
+
+      - name: Enable AppleScript Control
+        run: |
+          defaults write com.apple.VoiceOver4/default SCREnableAppleScript -bool true || true
+
+      - name: Set Default Greeting
+        run: |
+          defaults write com.apple.VoiceOver4/default loginGreeting -string "Default Greeting" || true
+
+      - name: Open & Close VoiceOver VoiceOver Utility
+        run: |
+          mkdir -p artifacts || true
+          /usr/bin/osascript start-vo-utility.applescript || true
+          sleep 5
+          screencapture artifacts/utility.png || true
+          /usr/bin/osascript stop-vo-utility.applescript || true
+
+      - name: Start & Stop VoiceOver
+        run: |
+          /System/Library/CoreServices/VoiceOver.app/Contents/MacOS/VoiceOverStarter &
+          sleep 5
+          mkdir -p artifacts || true
+          screencapture artifacts/started.png || true
+          kill -15 $(ps aux | egrep "[V]oiceOver.app/Contents/MacOS/VoiceOver launchd -s" | awk '{print $2}')
+          sleep 5
+          screencapture artifacts/stopped.png || true
+
       - name: Inject unique login greeting
         id: greeting
         run: |
@@ -199,13 +229,9 @@ jobs:
 
           for i in {1..50}; do
             echo "Attempt: $i"
-
             screencapture artifacts/vo-$i.png || true
-
             ACTUAL=$(/usr/bin/osascript voiceOverPerform.applescript 2>/dev/null || true)
-
             echo "Spoken Phrase: $ACTUAL"
-            echo "$ACTUAL" > artifacts/last-phrase-$i.txt
 
             if [ "$ACTUAL" = "$EXPECTED" ]; then
               break
