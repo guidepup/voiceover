@@ -46,8 +46,13 @@ jobs:
           mkdir -p artifacts || true
           screencapture artifacts/started.png || true
           kill -15 $(ps aux | egrep "[V]oiceOver.app/Contents/MacOS/VoiceOver launchd -s" | awk '{print $2}')
+          /usr/bin/osascript stop-vo.applescript || true
           sleep 5
           screencapture artifacts/stopped.png || true
+
+      - name: Configure portable preferences
+        run: |
+          /usr/bin/osascript start-portable-preferences.applescript || true
 
       - name: Inject unique login greeting
         id: greeting
@@ -248,6 +253,7 @@ jobs:
         if: always()
         run: |
           kill -15 $(ps aux | egrep "[V]oiceOver.app/Contents/MacOS/VoiceOver launchd -s" | awk '{print $2}')
+          /usr/bin/osascript stop-vo.applescript || true
           hdiutil detach /Volumes/VoiceOverPreferences || true
           rm -f VoiceOverPreferences.dmg || true
 
