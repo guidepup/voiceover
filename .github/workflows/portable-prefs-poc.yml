@@ -101,6 +101,9 @@ jobs:
         run: |
           PLIST="$HOME/Library/Group Containers/group.com.apple.VoiceOver/Library/Preferences/com.apple.VoiceOver4.local.plist"
 
+          # Ensure directory exists
+          mkdir -p "$(dirname "$PLIST")"
+
           # Ensure plist exists
           plutil -create binary1 "$PLIST" 2>/dev/null || true
 
