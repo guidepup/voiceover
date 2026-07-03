@@ -35,13 +35,13 @@ jobs:
         run: |
           defaults write com.apple.VoiceOver4/default loginGreeting -string "Default Greeting" || true
 
-      - name: Start & Stop VoiceOver
-        run: |
-          /System/Library/CoreServices/VoiceOver.app/Contents/MacOS/VoiceOverStarter &
-          sleep 5
-          kill -15 $(ps aux | egrep "[V]oiceOver.app/Contents/MacOS/VoiceOver launchd -s" | awk '{print $2}') || true
-          sleep 5
-          /usr/bin/osascript stop-vo.applescript || true
+      # - name: Start & Stop VoiceOver
+      #   run: |
+      #     /System/Library/CoreServices/VoiceOver.app/Contents/MacOS/VoiceOverStarter &
+      #     sleep 5
+      #     kill -15 $(ps aux | egrep "[V]oiceOver.app/Contents/MacOS/VoiceOver launchd -s" | awk '{print $2}') || true
+      #     sleep 5
+      #     /usr/bin/osascript stop-vo.applescript || true
 
       ## Portable preferences setup
 
@@ -99,6 +99,15 @@ jobs:
           screencapture artifacts/vo-utility-post-mount.png || true
           /usr/bin/osascript stop-vo-utility.applescript || true
 
+      - name: Preferences List
+        run: |
+          ls -la "$HOME/Library/Preferences/" || true
+
+      - name: Group Containers List
+        run: |
+          ls -la "$HOME/Library/Group Containers/" || true
+          ls -laR "$HOME/Library/Group Containers/group.com.apple.VoiceOver/" || true
+
       ## Automated portable preferences enablement
 
       - name: Read portable identifier
@@ -109,6 +118,7 @@ jobs:
               -c "Print :identifier" \
               "./${{ matrix.os }}/VoiceOver/VoiceOver4.portable/voidentifier"
           )
+          echo "$IDENTIFIER"
           echo "identifier=$IDENTIFIER" >> "$GITHUB_OUTPUT"
 
       - name: Trust portable preferences - global preferences
@@ -203,9 +213,11 @@ jobs:
           ln -sf "$VO_PORTABLE" "$GLOBAL_PREFS/com.apple.VoiceOver4.portable.scrd"
           ln -sf "$VO_PORTABLE" "$GLOBAL_PREFS/com.apple.VoiceOver4.portable.scrd.vou"
           ln -sf "$VO_PORTABLE" "$GLOBAL_PREFS/com.apple.VoiceOver4.portable.scro"
+          ln -sf "$VO_PORTABLE" "$GLOBAL_PREFS/com.apple.VoiceOver4.portable.scui"
           ln -sf "$VO_PORTABLE" "$GROUP_CONTAINER_PREFS/com.apple.VoiceOver4.portable.scrd"
           ln -sf "$VO_PORTABLE" "$GROUP_CONTAINER_PREFS/com.apple.VoiceOver4.portable.scrd.vou"
           ln -sf "$VO_PORTABLE" "$GROUP_CONTAINER_PREFS/com.apple.VoiceOver4.portable.scro"
+          ln -sf "$VO_PORTABLE" "$GROUP_CONTAINER_PREFS/com.apple.VoiceOver4.portable.scui"
 
       - name: Open & Close VoiceOver VoiceOver Utility
         run: |
