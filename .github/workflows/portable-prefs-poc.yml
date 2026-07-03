@@ -133,10 +133,12 @@ jobs:
           # Start VoiceOver
           /System/Library/CoreServices/VoiceOver.app/Contents/MacOS/VoiceOverStarter &
 
-          for i in {1..10}; do
+          for i in {1..50}; do
+            echo "Attempt: $i"
+
             screencapture artifacts/vo-$i.png || true
 
-            ACTUAL=$(/usr/bin/osascript voiceOverPerform.applescript)
+            ACTUAL=$(/usr/bin/osascript voiceOverPerform.applescript 2>/dev/null || true)
 
             echo "$ACTUAL" > artifacts/last-phrase-$i.txt
 
