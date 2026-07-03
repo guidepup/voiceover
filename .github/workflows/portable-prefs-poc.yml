@@ -75,29 +75,16 @@ jobs:
       - name: Create Volume
         run: |
           hdiutil create \
-            -size 256m \
             -fs APFS \
             -volname GuidepupVoiceOverPreferences \
+            -srcfolder "./${{ matrix.os }}" \
+            -format UDRW \
             -ov \
             GuidepupVoiceOverPreferences.dmg
-
-          hdiutil attach \
-            GuidepupVoiceOverPreferences.dmg \
-            -mountpoint /Volumes/GuidepupVoiceOverPreferences
-
-          cp -r "./${{ matrix.os }}/" /Volumes/GuidepupVoiceOverPreferences/
 
       - name: Verify mount
         run: |
           ls -R /Volumes/GuidepupVoiceOverPreferences
-
-      - name: Open & Close VoiceOver VoiceOver Utility
-        run: |
-          mkdir -p artifacts || true
-          /usr/bin/osascript start-vo-utility.applescript || true
-          sleep 5
-          screencapture artifacts/vo-utility-post-mount.png || true
-          /usr/bin/osascript stop-vo-utility.applescript || true
 
       - name: Preferences List
         run: |
@@ -161,6 +148,8 @@ jobs:
             fi
           done
 
+          plutil -convert xml1 -o - "$PLIST" || true
+
       - name: Trust portable preferences - group container preferences
         env:
           IDENTIFIER: ${{ steps.portable.outputs.identifier }}
@@ -203,6 +192,8 @@ jobs:
               /usr/libexec/PlistBuddy -c "Add :$KEY:$INDEX string $IDENTIFIER" "$PLIST"
             fi
           done
+
+          plutil -convert xml1 -o - "$PLIST" || true
 
       - name: Create portable preferences symlinks
         run: |
