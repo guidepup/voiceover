@@ -48,10 +48,6 @@ jobs:
           plutil -convert binary1 "./${{ matrix.os }}/VoiceOver/VoiceOver4.portable/default.plist"
           plutil -convert binary1 "./${{ matrix.os }}/VoiceOver/VoiceOver4.portable/master.plist"
 
-      - name: Preferences List
-        run: |
-          ls -la "$HOME/Library/Preferences/" || true
-
       - name: Group Containers List
         run: |
           ls -la "$HOME/Library/Group Containers/" || true
@@ -172,14 +168,11 @@ jobs:
           screencapture artifacts/vo-utility-end.png || true
           /usr/bin/osascript stop-vo-utility.applescript || true
 
-      - name: Preferences List
-        run: |
-          ls -la "$HOME/Library/Preferences/" || true
-
       - name: Group Containers List
         run: |
           ls -la "$HOME/Library/Group Containers/" || true
           ls -laR "$HOME/Library/Group Containers/group.com.apple.VoiceOver/" || true
+          plutil -convert xml1 -o - "$HOME/Library/Group Containers/group.com.apple.VoiceOver/Library/Preferences/com.apple.VoiceOver4.local.plist" || true
 
       ## Cleanup
 
