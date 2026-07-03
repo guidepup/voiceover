@@ -37,24 +37,24 @@ jobs:
 
       ## Ensure VO initialised at least once
 
-      - name: Open & Close VoiceOver VoiceOver Utility
-        run: |
-          mkdir -p artifacts || true
-          /usr/bin/osascript start-vo-utility.applescript || true
-          sleep 5
-          screencapture artifacts/utility.png || true
-          /usr/bin/osascript stop-vo-utility.applescript || true
+      # - name: Open & Close VoiceOver VoiceOver Utility
+      #   run: |
+      #     mkdir -p artifacts || true
+      #     /usr/bin/osascript start-vo-utility.applescript || true
+      #     sleep 5
+      #     screencapture artifacts/utility.png || true
+      #     /usr/bin/osascript stop-vo-utility.applescript || true
 
-      - name: Start & Stop VoiceOver
-        run: |
-          /System/Library/CoreServices/VoiceOver.app/Contents/MacOS/VoiceOverStarter &
-          sleep 5
-          mkdir -p artifacts || true
-          screencapture artifacts/started.png || true
-          kill -15 $(ps aux | egrep "[V]oiceOver.app/Contents/MacOS/VoiceOver launchd -s" | awk '{print $2}')
-          /usr/bin/osascript stop-vo.applescript || true
-          sleep 5
-          screencapture artifacts/stopped.png || true
+      # - name: Start & Stop VoiceOver
+      #   run: |
+      #     /System/Library/CoreServices/VoiceOver.app/Contents/MacOS/VoiceOverStarter &
+      #     sleep 5
+      #     mkdir -p artifacts || true
+      #     screencapture artifacts/started.png || true
+      #     kill -15 $(ps aux | egrep "[V]oiceOver.app/Contents/MacOS/VoiceOver launchd -s" | awk '{print $2}')
+      #     /usr/bin/osascript stop-vo.applescript || true
+      #     sleep 5
+      #     screencapture artifacts/stopped.png || true
 
       ## Portable preferences setup
 
@@ -85,21 +85,20 @@ jobs:
           plutil -convert binary1 "./${{ matrix.os }}/VoiceOver/VoiceOver4.portable/default.plist"
           plutil -convert binary1 "./${{ matrix.os }}/VoiceOver/VoiceOver4.portable/master.plist"
 
-      - name: Create VoiceOverPreferences.dmg from "./${{ matrix.os }}/VoiceOver/VoiceOver4.portable"
+      - name: Create VoiceOverPreferences.dmg from "./${{ matrix.os }}"
         run: |
           hdiutil create \
-            -srcfolder "./${{ matrix.os }}/VoiceOver/VoiceOver4.portable" \
             -size 256m \
             -fs APFS \
             -volname VoiceOverPreferences \
             -ov \
             VoiceOverPreferences.dmg
 
-      - name: Attach portable preferences
-        run: |
           hdiutil attach \
             VoiceOverPreferences.dmg \
             -mountpoint /Volumes/VoiceOverPreferences
+
+          cp -r "./${{ matrix.os }}/" /Volumes/VoiceOverPreferences/
 
       - name: Verify mount
         run: |
@@ -316,7 +315,7 @@ jobs:
           # Start VoiceOver
           /System/Library/CoreServices/VoiceOver.app/Contents/MacOS/VoiceOverStarter &
 
-          for i in {1..50}; do
+          for i in {1..10}; do
             echo "Attempt: $i"
             screencapture artifacts/vo-$i.png || true
             ACTUAL=$(/usr/bin/osascript voiceOverPerform.applescript 2>/dev/null || true)
