@@ -14,10 +14,14 @@ jobs:
       matrix:
         os: [macos-14, macos-15, macos-26]
     steps:
+      ## Environment setup
+
       - uses: actions/checkout@v6
 
       - name: Setup OS for VO automation
         uses: guidepup/setup-action@0.21.0
+
+      ## Example global defaults
 
       - name: Disable Splash
         run: |
@@ -30,6 +34,8 @@ jobs:
       - name: Set Default Greeting
         run: |
           defaults write com.apple.VoiceOver4/default loginGreeting -string "Default Greeting" || true
+
+      ## Ensure VO initialised at least once
 
       - name: Open & Close VoiceOver VoiceOver Utility
         run: |
@@ -50,11 +56,9 @@ jobs:
           sleep 5
           screencapture artifacts/stopped.png || true
 
-      - name: Configure portable preferences
-        run: |
-          /usr/bin/osascript start-portable-preferences.applescript || true
+      ## Portable preferences setup
 
-      - name: Inject unique login greeting
+      - name: Inject unique login greeting into portable preference
         id: greeting
         run: |
           SECRET=$(uuidgen)-$(openssl rand -hex 16)
@@ -75,6 +79,43 @@ jobs:
           /usr/libexec/PlistBuddy \
             -c "Print :loginGreeting" \
             "$DEFAULT_PLIST"
+
+      - name: Convert plist xml to binary
+        run: |
+          plutil -convert binary1 "./${{ matrix.os }}/VoiceOver/VoiceOver4.portable/default.plist"
+          plutil -convert binary1 "./${{ matrix.os }}/VoiceOver/VoiceOver4.portable/master.plist"
+
+      - name: Create VoiceOverPreferences.dmg from "./${{ matrix.os }}/VoiceOver/VoiceOver4.portable"
+        run: |
+          hdiutil create \
+            -srcfolder "./${{ matrix.os }}/VoiceOver/VoiceOver4.portable" \
+            -size 256m \
+            -volname VoiceOverPreferences \
+            -fs APFS \
+            -format UDZO \
+            -ov \
+            VoiceOverPreferences.dmg
+
+      - name: Attach portable preferences
+        run: |
+          hdiutil attach \
+            VoiceOverPreferences.dmg \
+            -mountpoint /Volumes/VoiceOverPreferences
+
+      - name: Verify mount
+        run: |
+          ls -R /Volumes/VoiceOverPreferences
+          test -f /Volumes/VoiceOverPreferences/default.plist
+          test -f /Volumes/VoiceOverPreferences/master.plist
+          test -f /Volumes/VoiceOverPreferences/voidentifier
+
+      ## Temp portable preferences enablement
+
+      - name: Enable portable preferences in VO
+        run: |
+          /usr/bin/osascript start-portable-preferences.applescript || true
+
+      ## Automated portable preferences enablement
 
       - name: Read portable identifier
         id: portable
@@ -177,34 +218,78 @@ jobs:
         run: |
           plutil -p "$HOME/Library/Group Containers/group.com.apple.VoiceOver/Library/Preferences/com.apple.VoiceOver4.local.plist"
 
-      - name: Convert plist xml to binary
-        run: |
-          plutil -convert binary1 "./${{ matrix.os }}/VoiceOver/VoiceOver4.portable/default.plist"
-          plutil -convert binary1 "./${{ matrix.os }}/VoiceOver/VoiceOver4.portable/master.plist"
+      ## File Verification Stages
 
-      - name: Create VoiceOverPreferences.dmg from "./${{ matrix.os }}/VoiceOver/VoiceOver4.portable"
+      - name: Preferences List
         run: |
-          hdiutil create \
-            -srcfolder "./${{ matrix.os }}/VoiceOver/VoiceOver4.portable" \
-            -size 256m \
-            -volname VoiceOverPreferences \
-            -fs APFS \
-            -format UDZO \
-            -ov \
-            VoiceOverPreferences.dmg
+          ls -la "$HOME/Library/Preferences/" || true
 
-      - name: Attach portable preferences
+      - name: com.apple.VoiceOver4 Preferences List
         run: |
-          hdiutil attach \
-            VoiceOverPreferences.dmg \
-            -mountpoint /Volumes/VoiceOverPreferences
+          ls -la "$HOME/Library/Preferences/com.apple.VoiceOver4" || true
 
-      - name: Verify mount
+      - name: Group Containers List
         run: |
-          ls -R /Volumes/VoiceOverPreferences
-          test -f /Volumes/VoiceOverPreferences/default.plist
-          test -f /Volumes/VoiceOverPreferences/master.plist
-          test -f /Volumes/VoiceOverPreferences/voidentifier
+          ls -la "$HOME/Library/Group Containers/" || true
+          ls -la "$HOME/Library/Group Containers/group.com.apple.VoiceOver" || true
+          ls -la "$HOME/Library/Group Containers/group.com.apple.VoiceOver/Library/" || true
+          ls -la "$HOME/Library/Group Containers/group.com.apple.VoiceOver/Library/Application Scripts" || true
+          ls -la "$HOME/Library/Group Containers/group.com.apple.VoiceOver/Library/Application Support" || true
+          ls -la "$HOME/Library/Group Containers/group.com.apple.VoiceOver/Library/Caches" || true
+          ls -la "$HOME/Library/Group Containers/group.com.apple.VoiceOver/Library/Preferences/" || true
+          ls -la "$HOME/Library/Group Containers/group.com.apple.VoiceOver/Library/Preferences/com.apple.VoiceOver4/" || true
+
+      - name: Accessibility List
+        run: |
+          ls -la "/private/var/db/Accessibility/" || true
+          cat "/private/var/db/Accessibility/.VoiceOverAppleScriptEnabled" || true
+          cat "/private/var/db/Accessibility/.VoiceOverAppleScriptEnabled-Migrated" || true
+
+      - name: com.apple.VoiceOver4/default.plist
+        run: |
+          plutil -convert xml1 -o - "$HOME/Library/Preferences/com.apple.VoiceOver4/default.plist" || true
+
+      - name: com.apple.VoiceOver4/defaultValue.plist
+        run: |
+          plutil -convert xml1 -o - "$HOME/Library/Preferences/com.apple.VoiceOver4/defaultValue.plist" || true
+
+      - name: com.apple.VoiceOver4/master.plist
+        run: |
+          plutil -convert xml1 -o - "$HOME/Library/Preferences/com.apple.VoiceOver4/master.plist" || true
+
+      - name: com.apple.VoiceOver.plist
+        run: |
+          plutil -convert xml1 -o - "$HOME/Library/Preferences/com.apple.VoiceOver.plist" || true
+
+      - name: com.apple.VoiceOver4.local.plist
+        run: |
+          plutil -convert xml1 -o - "$HOME/Library/Preferences/com.apple.VoiceOver4.local.plist" || true
+
+      - name: com.apple.VoiceOverTraining.plist
+        run: |
+          plutil -convert xml1 -o - "$HOME/Library/Preferences/com.apple.VoiceOverTraining.plist" || true
+
+      - name: com.apple.VoiceOverUtility.plist
+        run: |
+          plutil -convert xml1 -o - "$HOME/Library/Preferences/com.apple.VoiceOverUtility.plist" || true
+
+      - name: com.apple.VoiceOverUtilityCacheBuilder.plist
+        run: |
+          plutil -convert xml1 -o - "$HOME/Library/Preferences/com.apple.VoiceOverUtilityCacheBuilder.plist" || true
+
+      - name: group.com.apple.VoiceOver/Library/Preferences/com.apple.VoiceOver4/default.plist
+        run: |
+          plutil -convert xml1 -o - "$HOME/Library/Group Containers/group.com.apple.VoiceOver/Library/Preferences/com.apple.VoiceOver4/default.plist" || true
+
+      - name: group.com.apple.VoiceOver/Library/Preferences/com.apple.VoiceOver4.local.plist
+        run: |
+          plutil -convert xml1 -o - "$HOME/Library/Group Containers/group.com.apple.VoiceOver/Library/Preferences/com.apple.VoiceOver4.local.plist" || true
+
+      - name: group.com.apple.VoiceOver/.com.apple.containermanagerd.metadata.plist
+        run: |
+          plutil -convert xml1 -o - "$HOME/Library/Group Containers/group.com.apple.VoiceOver/.com.apple.containermanagerd.metadata.plist" || true
+
+      ## VO Verification Stages
 
       - name: Launch & Verify VoiceOver Utility
         run: |
@@ -248,6 +333,8 @@ jobs:
           echo "Expected: $EXPECTED"
           echo "Actual:   $ACTUAL"
           test "$ACTUAL" = "$EXPECTED"
+
+      ## Cleanup
 
       - name: Cleanup
         if: always()
