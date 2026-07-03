@@ -82,6 +82,10 @@ jobs:
             -ov \
             GuidepupVoiceOverPreferences.dmg
 
+          hdiutil attach \
+            GuidepupVoiceOverPreferences.dmg \
+            -mountpoint /Volumes/GuidepupVoiceOverPreferences
+
       - name: Verify mount
         run: |
           ls -R /Volumes/GuidepupVoiceOverPreferences
