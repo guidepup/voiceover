@@ -148,7 +148,9 @@ jobs:
         run: |
           hdiutil create \
             -srcfolder "./${{ matrix.os }}/VoiceOver/VoiceOver4.portable" \
+            -size 256m \
             -volname VoiceOverPreferences \
+            -fs APFS \
             -format UDZO \
             -ov \
             VoiceOverPreferences.dmg
@@ -165,6 +167,13 @@ jobs:
           test -f /Volumes/VoiceOverPreferences/default.plist
           test -f /Volumes/VoiceOverPreferences/master.plist
           test -f /Volumes/VoiceOverPreferences/voidentifier
+
+      - name: Launch & Verify VoiceOver Utility
+        run: |
+          mkdir -p artifacts || true
+          /usr/bin/osascript start-vo-utility.applescript || true
+          screencapture artifacts/utility.png || true
+          /usr/bin/osascript stop-vo-utility.applescript || true
 
       - name: Launch & Verify VoiceOver Welcome Greeting
         env:
