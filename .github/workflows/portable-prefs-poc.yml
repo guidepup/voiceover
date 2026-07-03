@@ -143,6 +143,7 @@ jobs:
 
             ACTUAL=$(/usr/bin/osascript voiceOverPerform.applescript 2>/dev/null || true)
 
+            echo "Spoken Phrase: $ACTUAL"
             echo "$ACTUAL" > artifacts/last-phrase-$i.txt
 
             if [ "$ACTUAL" = "$EXPECTED" ]; then
