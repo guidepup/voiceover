@@ -193,6 +193,13 @@ jobs:
 
       ## Verification Stages
 
+      - name: Open VoiceOver Utility
+        run: |
+          mkdir -p artifacts || true
+          /usr/bin/osascript start-vo-utility.applescript || true
+          sleep 5
+          screencapture artifacts/vo-utility.png || true
+
       - name: Launch & Verify VoiceOver Welcome Greeting
         run: |
           mkdir -p artifacts || true
