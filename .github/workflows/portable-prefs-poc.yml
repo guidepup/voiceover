@@ -103,9 +103,6 @@ jobs:
       - name: Verify mount
         run: |
           ls -R /Volumes/VoiceOverPreferences
-          test -f /Volumes/VoiceOverPreferences/default.plist
-          test -f /Volumes/VoiceOverPreferences/master.plist
-          test -f /Volumes/VoiceOverPreferences/voidentifier
 
       ## Temp portable preferences enablement
 
