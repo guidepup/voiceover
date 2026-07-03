@@ -136,6 +136,15 @@ jobs:
           # Start VoiceOver
           /System/Library/CoreServices/VoiceOver.app/Contents/MacOS/VoiceOverStarter &
 
+          sleep 5
+
+          kill -15 $(ps aux | egrep "[V]oiceOver.app/Contents/MacOS/VoiceOver launchd -s" | awk '{print $2}')
+
+          sleep 5
+
+          # Start VoiceOver
+          /System/Library/CoreServices/VoiceOver.app/Contents/MacOS/VoiceOverStarter &
+
           for i in {1..50}; do
             echo "Attempt: $i"
 
