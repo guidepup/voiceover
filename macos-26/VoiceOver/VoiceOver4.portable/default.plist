@@ -2,9 +2,75 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>SCRCInvertedTCommanderCaptureEnabled</key>
+	<true/>
+	<key>SCRCTrackpadCommanderEnabled</key>
+	<false/>
+	<key>SCRCUserDefaultsAutomaticallySpeakWebPage</key>
+	<false/>
 	<key>SCRCUserDefaultsBrailleAutoAdvanceDuration</key>
 	<real>4</real>
-	<key>SCRScreenSharingVoiceRotor</key>
-	<string></string>
+	<key>SCRCUserDefaultsBrailleContractionMode</key>
+	<integer>1</integer>
+	<key>SCRCUserDefaultsBrailleEightDotMode</key>
+	<true/>
+	<key>SCRCUserDefaultsBrailleTableIdentifier</key>
+	<string>com.apple.scrod.braille.table.duxbury.eng-xueb</string>
+	<key>SCRCUserDefaultsBrailleWordWrapEnabled</key>
+	<true/>
+	<key>SCRCUserDefaultsGroupingBehaviorGlobal</key>
+	<string>SCRGroupDrill</string>
+	<key>SCRCUserDefaultsHasPronunciations</key>
+	<true/>
+	<key>SCRCUserDefaultsImageCaptionLastAssetCatalogUpdateCheck</key>
+	<date>2026-07-01T12:17:03Z</date>
+	<key>SCRCUserDefaultsTextSearchHistory</key>
+	<array>
+		<string>guidepup</string>
+	</array>
+	<key>SCRCUserDefaultsUseImageCaption</key>
+	<false/>
+	<key>SCRCategories_SCRCategorySystemWide_SCRAudioOutputSelectorDeviceName</key>
+	<string>SCRAudioOutputSelectorDefaultOutput</string>
+	<key>SCRCategories_SCRCategorySystemWide_SCRSoundComponentSettings_SCRDisableSound</key>
+	<false/>
+	<key>SCRCategories_SCRCategorySystemWide_SCRSpeechComponentSettings_SCRDisableSpeech</key>
+	<false/>
+	<key>SCRCategories_SCRCategorySystemWide_SCRSpeechLanguages_defaultValue_SCRSpeechComponentSettings_SCRRateAsPercent</key>
+	<integer>45</integer>
+	<key>SCRCategories_SCRCategorySystemWide_SCRSpeechLanguages_default_SCRSpeechComponentSettings_SCRIntonationAsPercent</key>
+	<real>50</real>
+	<key>SCRCategories_SCRCategorySystemWide_SCRSpeechLanguages_default_SCRSpeechComponentSettings_SCRPitchAsPercent</key>
+	<real>50</real>
+	<key>SCRCategories_SCRCategorySystemWide_SCRSpeechLanguages_default_SCRSpeechComponentSettings_SCRRateAsPercent</key>
+	<integer>100</integer>
+	<key>SCRCategories_SCRCategorySystemWide_SCRSpeechLanguages_default_SCRSpeechComponentSettings_SCRVoiceIdentifier</key>
+	<string>com.apple.speech.synthesis.voice.daniel.compact</string>
+	<key>SCRCategories_SCRCategorySystemWide_SCRSpeechLanguages_default_SCRSpeechComponentSettings_SCRVoiceUseCustomizedVoiceSettings</key>
+	<true/>
+	<key>SCRCategories_SCRCategorySystemWide_SCRSpeechLanguages_default_SCRSpeechComponentSettings_SCRVolumeAsPercent</key>
+	<real>100</real>
+	<key>SCRConfigurationCursorTrackingMToVO</key>
+	<true/>
+	<key>SCRConfigurationCursorTrackingVOToM</key>
+	<false/>
+	<key>SCRConfigurationTextUnderMouseHoverDelayInterval</key>
+	<real>0.0</real>
+	<key>SCRContextualHelpDelayInSeconds</key>
+	<integer>0</integer>
+	<key>SCRDisplayTextEnabled</key>
+	<true/>
+	<key>SCREnableAppleScript</key>
+	<true/>
+	<key>SCRRotorLastRotor</key>
+	<string>SCRElementRotorTypeWindowSpots</string>
+	<key>SCRSpeechAttributeRotorLastRotor</key>
+	<integer>1</integer>
+	<key>SCRVerbosity_SCRVerbosityLevel</key>
+	<string>SCRVerbosityHigh</string>
+	<key>SCRVisualsCaptionWindowFrame</key>
+	<string>{{0, 0}, {600, 110}}</string>
+	<key>SCRVoiceOverCursorEnabled</key>
+	<true/>
 </dict>
 </plist>

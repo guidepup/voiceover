@@ -40,7 +40,7 @@ jobs:
       - name: Inject unique login greeting into portable preference
         id: greeting
         run: |
-          SECRET=$(uuidgen)-$(openssl rand -hex 16)
+          SECRET=guidepup-$(uuidgen)-$(openssl rand -hex 16)
 
           DEFAULT_PLIST="./${{ matrix.os }}/VoiceOver/VoiceOver4.portable/default.plist"
 
@@ -64,24 +64,24 @@ jobs:
           plutil -convert binary1 "./${{ matrix.os }}/VoiceOver/VoiceOver4.portable/default.plist"
           plutil -convert binary1 "./${{ matrix.os }}/VoiceOver/VoiceOver4.portable/master.plist"
 
-      - name: Create VoiceOverPreferences.dmg from "./${{ matrix.os }}"
+      - name: Create Volume
         run: |
           hdiutil create \
             -size 256m \
             -fs APFS \
-            -volname VoiceOverPreferences \
+            -volname GuidepupVoiceOverPreferences \
             -ov \
-            VoiceOverPreferences.dmg
+            GuidepupVoiceOverPreferences.dmg
 
           hdiutil attach \
-            VoiceOverPreferences.dmg \
-            -mountpoint /Volumes/VoiceOverPreferences
+            GuidepupVoiceOverPreferences.dmg \
+            -mountpoint /Volumes/GuidepupVoiceOverPreferences
 
-          cp -r "./${{ matrix.os }}/" /Volumes/VoiceOverPreferences/
+          cp -r "./${{ matrix.os }}/" /Volumes/GuidepupVoiceOverPreferences/
 
       - name: Verify mount
         run: |
-          ls -R /Volumes/VoiceOverPreferences
+          ls -R /Volumes/GuidepupVoiceOverPreferences
 
       ## Automated portable preferences enablement
 
@@ -180,7 +180,7 @@ jobs:
 
       - name: Create portable preferences symlinks
         run: |
-          VO_PORTABLE="/Volumes/VoiceOverPreferences/VoiceOver/VoiceOver4.portable"
+          VO_PORTABLE="/Volumes/GuidepupVoiceOverPreferences/VoiceOver/VoiceOver4.portable"
           GLOBAL_PREFS="$HOME/Library/Preferences"
           GROUP_CONTAINER_PREFS="$HOME/Library/Group Containers/group.com.apple.VoiceOver/Library/Preferences"
 
@@ -233,8 +233,8 @@ jobs:
       - name: Cleanup
         if: always()
         run: |
-          hdiutil detach /Volumes/VoiceOverPreferences || true
-          rm -f VoiceOverPreferences.dmg || true
+          hdiutil detach /Volumes/GuidepupVoiceOverPreferences || true
+          rm -f GuidepupVoiceOverPreferences.dmg || true
 
       - uses: actions/upload-artifact@v4
         if: always()
