@@ -35,29 +35,37 @@ jobs:
         run: |
           defaults write com.apple.VoiceOver4/default loginGreeting -string "Default Greeting" || true
 
+      - name: Start & Stop VoiceOver
+        run: |
+          /System/Library/CoreServices/VoiceOver.app/Contents/MacOS/VoiceOverStarter &
+          sleep 5
+          kill -15 $(ps aux | egrep "[V]oiceOver.app/Contents/MacOS/VoiceOver launchd -s" | awk '{print $2}') || true
+          sleep 5
+          /usr/bin/osascript stop-vo.applescript || true
+
       ## Portable preferences setup
 
-      - name: Inject unique login greeting into portable preference
-        id: greeting
-        run: |
-          SECRET=guidepup-$(uuidgen)-$(openssl rand -hex 16)
+      # - name: Inject unique login greeting into portable preference
+      #   id: greeting
+      #   run: |
+      #     SECRET=guidepup-$(uuidgen)-$(openssl rand -hex 16)
 
-          DEFAULT_PLIST="./${{ matrix.os }}/VoiceOver/VoiceOver4.portable/default.plist"
+      #     DEFAULT_PLIST="./${{ matrix.os }}/VoiceOver/VoiceOver4.portable/default.plist"
 
-          /usr/libexec/PlistBuddy \
-            -c "Delete :loginGreeting" \
-            "$DEFAULT_PLIST" 2>/dev/null || true
+      #     /usr/libexec/PlistBuddy \
+      #       -c "Delete :loginGreeting" \
+      #       "$DEFAULT_PLIST" 2>/dev/null || true
 
-          /usr/libexec/PlistBuddy \
-            -c "Add :loginGreeting string $SECRET" \
-            "$DEFAULT_PLIST"
+      #     /usr/libexec/PlistBuddy \
+      #       -c "Add :loginGreeting string $SECRET" \
+      #       "$DEFAULT_PLIST"
 
-          echo "secret=$SECRET" >> "$GITHUB_OUTPUT"
+      #     echo "secret=$SECRET" >> "$GITHUB_OUTPUT"
 
-          echo "Injected loginGreeting:"
-          /usr/libexec/PlistBuddy \
-            -c "Print :loginGreeting" \
-            "$DEFAULT_PLIST"
+      #     echo "Injected loginGreeting:"
+      #     /usr/libexec/PlistBuddy \
+      #       -c "Print :loginGreeting" \
+      #       "$DEFAULT_PLIST"
 
       - name: Convert plist xml to binary
         run: |
@@ -192,13 +200,6 @@ jobs:
           ln -sf "$VO_PORTABLE" "$GROUP_CONTAINER_PREFS/com.apple.VoiceOver4.portable.scro"
 
       ## Verification Stages
-
-      - name: Open VoiceOver Utility
-        run: |
-          mkdir -p artifacts || true
-          /usr/bin/osascript start-vo-utility.applescript || true
-          sleep 5
-          screencapture artifacts/vo-utility.png || true
 
       - name: Launch & Verify VoiceOver Welcome Greeting
         run: |
