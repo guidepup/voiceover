@@ -175,8 +175,13 @@ jobs:
         run: |
           mkdir -p artifacts || true
           /usr/bin/osascript start-vo-utility.applescript || true
+
+          sleep 5
+
           screencapture artifacts/utility.png || true
           /usr/bin/osascript stop-vo-utility.applescript || true
+
+          sleep 5
 
       - name: Launch & Verify VoiceOver Welcome Greeting
         env:
