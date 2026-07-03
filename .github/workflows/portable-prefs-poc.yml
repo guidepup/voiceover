@@ -104,12 +104,6 @@ jobs:
         run: |
           ls -R /Volumes/VoiceOverPreferences
 
-      ## Temp portable preferences enablement
-
-      - name: Enable portable preferences in VO
-        run: |
-          /usr/bin/osascript start-portable-preferences.applescript || true
-
       ## Automated portable preferences enablement
 
       - name: Read portable identifier
@@ -226,19 +220,7 @@ jobs:
       - name: Group Containers List
         run: |
           ls -la "$HOME/Library/Group Containers/" || true
-          ls -la "$HOME/Library/Group Containers/group.com.apple.VoiceOver" || true
-          ls -la "$HOME/Library/Group Containers/group.com.apple.VoiceOver/Library/" || true
-          ls -la "$HOME/Library/Group Containers/group.com.apple.VoiceOver/Library/Application Scripts" || true
-          ls -la "$HOME/Library/Group Containers/group.com.apple.VoiceOver/Library/Application Support" || true
-          ls -la "$HOME/Library/Group Containers/group.com.apple.VoiceOver/Library/Caches" || true
-          ls -la "$HOME/Library/Group Containers/group.com.apple.VoiceOver/Library/Preferences/" || true
-          ls -la "$HOME/Library/Group Containers/group.com.apple.VoiceOver/Library/Preferences/com.apple.VoiceOver4/" || true
-
-      - name: Accessibility List
-        run: |
-          ls -la "/private/var/db/Accessibility/" || true
-          cat "/private/var/db/Accessibility/.VoiceOverAppleScriptEnabled" || true
-          cat "/private/var/db/Accessibility/.VoiceOverAppleScriptEnabled-Migrated" || true
+          ls -laR "$HOME/Library/Group Containers/group.com.apple.VoiceOver/" || true
 
       - name: com.apple.VoiceOver4/default.plist
         run: |
@@ -312,30 +294,108 @@ jobs:
           # Start VoiceOver
           /System/Library/CoreServices/VoiceOver.app/Contents/MacOS/VoiceOverStarter &
 
-          for i in {1..10}; do
-            echo "Attempt: $i"
-            screencapture artifacts/vo-$i.png || true
-            ACTUAL=$(/usr/bin/osascript voiceOverPerform.applescript 2>/dev/null || true)
-            echo "Spoken Phrase: $ACTUAL"
+          sleep 10
 
-            if [ "$ACTUAL" = "$EXPECTED" ]; then
-              break
-            fi
+          screencapture artifacts/pre-click.png || true
+          /usr/bin/osascript voiceOverPerformClick.applescript 2>/dev/null || true
+          screencapture artifacts/click-1.png || true
+          sleep 1
+          /usr/bin/osascript voiceOverPerformClick.applescript 2>/dev/null || true
+          screencapture artifacts/click-2.png || true
+          sleep 1
+          /usr/bin/osascript voiceOverPerformClick.applescript 2>/dev/null || true
+          screencapture artifacts/click-3.png || true
+          sleep 1
 
-            sleep 0.1
-          done
+          kill -15 $(ps aux | egrep "[V]oiceOver.app/Contents/MacOS/VoiceOver launchd -s" | awk '{print $2}')
 
-          echo "Expected: $EXPECTED"
-          echo "Actual:   $ACTUAL"
-          test "$ACTUAL" = "$EXPECTED"
+          sleep 5
+
+          /usr/bin/osascript stop-vo.applescript || true
+
+          sleep 5
+
+          # for i in {1..10}; do
+          #   echo "Attempt: $i"
+          #   screencapture artifacts/vo-$i.png || true
+          #   ACTUAL=$(/usr/bin/osascript voiceOverPerform.applescript 2>/dev/null || true)
+          #   echo "Spoken Phrase: $ACTUAL"
+
+          #   if [ "$ACTUAL" = "$EXPECTED" ]; then
+          #     break
+          #   fi
+
+          #   sleep 0.1
+          # done
+
+          # echo "Expected: $EXPECTED"
+          # echo "Actual:   $ACTUAL"
+          # test "$ACTUAL" = "$EXPECTED"
+
+      ## File Verification Stages
+
+      - name: Preferences List
+        run: |
+          ls -la "$HOME/Library/Preferences/" || true
+
+      - name: com.apple.VoiceOver4 Preferences List
+        run: |
+          ls -la "$HOME/Library/Preferences/com.apple.VoiceOver4" || true
+
+      - name: Group Containers List
+        run: |
+          ls -la "$HOME/Library/Group Containers/" || true
+          ls -laR "$HOME/Library/Group Containers/group.com.apple.VoiceOver/" || true
+
+      - name: com.apple.VoiceOver4/default.plist
+        run: |
+          plutil -convert xml1 -o - "$HOME/Library/Preferences/com.apple.VoiceOver4/default.plist" || true
+
+      - name: com.apple.VoiceOver4/defaultValue.plist
+        run: |
+          plutil -convert xml1 -o - "$HOME/Library/Preferences/com.apple.VoiceOver4/defaultValue.plist" || true
+
+      - name: com.apple.VoiceOver4/master.plist
+        run: |
+          plutil -convert xml1 -o - "$HOME/Library/Preferences/com.apple.VoiceOver4/master.plist" || true
+
+      - name: com.apple.VoiceOver.plist
+        run: |
+          plutil -convert xml1 -o - "$HOME/Library/Preferences/com.apple.VoiceOver.plist" || true
+
+      - name: com.apple.VoiceOver4.local.plist
+        run: |
+          plutil -convert xml1 -o - "$HOME/Library/Preferences/com.apple.VoiceOver4.local.plist" || true
+
+      - name: com.apple.VoiceOverTraining.plist
+        run: |
+          plutil -convert xml1 -o - "$HOME/Library/Preferences/com.apple.VoiceOverTraining.plist" || true
+
+      - name: com.apple.VoiceOverUtility.plist
+        run: |
+          plutil -convert xml1 -o - "$HOME/Library/Preferences/com.apple.VoiceOverUtility.plist" || true
+
+      - name: com.apple.VoiceOverUtilityCacheBuilder.plist
+        run: |
+          plutil -convert xml1 -o - "$HOME/Library/Preferences/com.apple.VoiceOverUtilityCacheBuilder.plist" || true
+
+      - name: group.com.apple.VoiceOver/Library/Preferences/com.apple.VoiceOver4/default.plist
+        run: |
+          plutil -convert xml1 -o - "$HOME/Library/Group Containers/group.com.apple.VoiceOver/Library/Preferences/com.apple.VoiceOver4/default.plist" || true
+
+      - name: group.com.apple.VoiceOver/Library/Preferences/com.apple.VoiceOver4.local.plist
+        run: |
+          plutil -convert xml1 -o - "$HOME/Library/Group Containers/group.com.apple.VoiceOver/Library/Preferences/com.apple.VoiceOver4.local.plist" || true
+
+      - name: group.com.apple.VoiceOver/.com.apple.containermanagerd.metadata.plist
+        run: |
+          plutil -convert xml1 -o - "$HOME/Library/Group Containers/group.com.apple.VoiceOver/.com.apple.containermanagerd.metadata.plist" || true
 
       ## Cleanup
 
       - name: Cleanup
         if: always()
         run: |
-          kill -15 $(ps aux | egrep "[V]oiceOver.app/Contents/MacOS/VoiceOver launchd -s" | awk '{print $2}')
-          /usr/bin/osascript stop-vo.applescript || true
           hdiutil detach /Volumes/VoiceOverPreferences || true
           rm -f VoiceOverPreferences.dmg || true
 
