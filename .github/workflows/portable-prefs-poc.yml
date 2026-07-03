@@ -16,6 +16,9 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Setup OS for VO automation
+        uses: guidepup/setup-action@0.21.0
+
       - name: Inject unique login greeting
         id: greeting
         run: |
