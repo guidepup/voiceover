@@ -91,6 +91,14 @@ jobs:
         run: |
           ls -R /Volumes/GuidepupVoiceOverPreferences
 
+      - name: Open & Close VoiceOver VoiceOver Utility
+        run: |
+          mkdir -p artifacts || true
+          /usr/bin/osascript start-vo-utility.applescript || true
+          sleep 5
+          screencapture artifacts/vo-utility-post-mount.png || true
+          /usr/bin/osascript stop-vo-utility.applescript || true
+
       ## Automated portable preferences enablement
 
       - name: Read portable identifier
@@ -199,6 +207,14 @@ jobs:
           ln -sf "$VO_PORTABLE" "$GROUP_CONTAINER_PREFS/com.apple.VoiceOver4.portable.scrd.vou"
           ln -sf "$VO_PORTABLE" "$GROUP_CONTAINER_PREFS/com.apple.VoiceOver4.portable.scro"
 
+      - name: Open & Close VoiceOver VoiceOver Utility
+        run: |
+          mkdir -p artifacts || true
+          /usr/bin/osascript start-vo-utility.applescript || true
+          sleep 5
+          screencapture artifacts/vo-utility-post-portable.png || true
+          /usr/bin/osascript stop-vo-utility.applescript || true
+
       ## Verification Stages
 
       - name: Launch & Verify VoiceOver Welcome Greeting
@@ -219,6 +235,14 @@ jobs:
           kill -15 $(ps aux | egrep "[V]oiceOver.app/Contents/MacOS/VoiceOver launchd -s" | awk '{print $2}') || true
           sleep 5
           /usr/bin/osascript stop-vo.applescript || true
+
+      - name: Open & Close VoiceOver VoiceOver Utility
+        run: |
+          mkdir -p artifacts || true
+          /usr/bin/osascript start-vo-utility.applescript || true
+          sleep 5
+          screencapture artifacts/vo-utility-end.png || true
+          /usr/bin/osascript stop-vo-utility.applescript || true
 
       - name: Preferences List
         run: |
