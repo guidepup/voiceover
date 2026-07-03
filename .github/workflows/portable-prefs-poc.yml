@@ -90,9 +90,8 @@ jobs:
           hdiutil create \
             -srcfolder "./${{ matrix.os }}/VoiceOver/VoiceOver4.portable" \
             -size 256m \
-            -volname VoiceOverPreferences \
             -fs APFS \
-            -format UDZO \
+            -volname VoiceOverPreferences \
             -ov \
             VoiceOverPreferences.dmg
 
