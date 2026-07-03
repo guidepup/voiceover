@@ -35,60 +35,18 @@ jobs:
         run: |
           defaults write com.apple.VoiceOver4/default loginGreeting -string "Default Greeting" || true
 
-      # - name: Start & Stop VoiceOver
-      #   run: |
-      #     /System/Library/CoreServices/VoiceOver.app/Contents/MacOS/VoiceOverStarter &
-      #     sleep 5
-      #     kill -15 $(ps aux | egrep "[V]oiceOver.app/Contents/MacOS/VoiceOver launchd -s" | awk '{print $2}') || true
-      #     sleep 5
-      #     /usr/bin/osascript stop-vo.applescript || true
-
-      ## Portable preferences setup
-
-      # - name: Inject unique login greeting into portable preference
-      #   id: greeting
-      #   run: |
-      #     SECRET=guidepup-$(uuidgen)-$(openssl rand -hex 16)
-
-      #     DEFAULT_PLIST="./${{ matrix.os }}/VoiceOver/VoiceOver4.portable/default.plist"
-
-      #     /usr/libexec/PlistBuddy \
-      #       -c "Delete :loginGreeting" \
-      #       "$DEFAULT_PLIST" 2>/dev/null || true
-
-      #     /usr/libexec/PlistBuddy \
-      #       -c "Add :loginGreeting string $SECRET" \
-      #       "$DEFAULT_PLIST"
-
-      #     echo "secret=$SECRET" >> "$GITHUB_OUTPUT"
-
-      #     echo "Injected loginGreeting:"
-      #     /usr/libexec/PlistBuddy \
-      #       -c "Print :loginGreeting" \
-      #       "$DEFAULT_PLIST"
+      - name: Open & Close VoiceOver VoiceOver Utility
+        run: |
+          mkdir -p artifacts || true
+          /usr/bin/osascript start-vo-utility.applescript || true
+          sleep 5
+          screencapture artifacts/vo-utility-pre-portable.png || true
+          /usr/bin/osascript stop-vo-utility.applescript || true
 
       - name: Convert plist xml to binary
         run: |
           plutil -convert binary1 "./${{ matrix.os }}/VoiceOver/VoiceOver4.portable/default.plist"
           plutil -convert binary1 "./${{ matrix.os }}/VoiceOver/VoiceOver4.portable/master.plist"
-
-      - name: Create Volume
-        run: |
-          hdiutil create \
-            -fs APFS \
-            -volname GuidepupVoiceOverPreferences \
-            -srcfolder "./${{ matrix.os }}" \
-            -format UDRW \
-            -ov \
-            GuidepupVoiceOverPreferences.dmg
-
-          hdiutil attach \
-            GuidepupVoiceOverPreferences.dmg \
-            -mountpoint /Volumes/GuidepupVoiceOverPreferences
-
-      - name: Verify mount
-        run: |
-          ls -R /Volumes/GuidepupVoiceOverPreferences
 
       - name: Preferences List
         run: |
@@ -111,48 +69,6 @@ jobs:
           )
           echo "$IDENTIFIER"
           echo "identifier=$IDENTIFIER" >> "$GITHUB_OUTPUT"
-
-      - name: Trust portable preferences - global preferences
-        env:
-          IDENTIFIER: ${{ steps.portable.outputs.identifier }}
-        run: |
-          PLIST="$HOME/Library/Preferences/com.apple.VoiceOver4.local.plist"
-
-          # Ensure plist exists
-          plutil -create binary1 "$PLIST" 2>/dev/null || true
-
-          # lastTouchedKey
-          /usr/libexec/PlistBuddy -c "Delete :lastTouchedKey" "$PLIST" 2>/dev/null || true
-          /usr/libexec/PlistBuddy -c "Add :lastTouchedKey string $IDENTIFIER" "$PLIST"
-
-          # SCRCUserDefaultsAlwaysUsePortableIDs
-          /usr/libexec/PlistBuddy -c "Print :SCRCUserDefaultsAlwaysUsePortableIDs" "$PLIST" >/dev/null 2>&1 || {
-            /usr/libexec/PlistBuddy -c "Add :SCRCUserDefaultsAlwaysUsePortableIDs array" "$PLIST"
-          }
-
-          # portablePreferenceKeys
-          /usr/libexec/PlistBuddy -c "Print :portablePreferenceKeys" "$PLIST" >/dev/null 2>&1 || {
-            /usr/libexec/PlistBuddy -c "Add :portablePreferenceKeys array" "$PLIST"
-          }
-
-          # append if missing
-          for KEY in \
-            SCRCUserDefaultsAlwaysUsePortableIDs \
-            portablePreferenceKeys
-          do
-            if ! /usr/libexec/PlistBuddy -c "Print :$KEY" "$PLIST" | grep -Fxq "$IDENTIFIER"; then
-              INDEX=$(
-                /usr/libexec/PlistBuddy -c "Print :$KEY" "$PLIST" |
-                tail -n +2 |
-                wc -l |
-                tr -d ' '
-              )
-
-              /usr/libexec/PlistBuddy -c "Add :$KEY:$INDEX string $IDENTIFIER" "$PLIST"
-            fi
-          done
-
-          plutil -convert xml1 -o - "$PLIST" || true
 
       - name: Trust portable preferences - group container preferences
         env:
@@ -202,25 +118,30 @@ jobs:
       - name: Create portable preferences symlinks
         run: |
           VO_PORTABLE="/Volumes/GuidepupVoiceOverPreferences/VoiceOver/VoiceOver4.portable"
-          GLOBAL_PREFS="$HOME/Library/Preferences"
           GROUP_CONTAINER_PREFS="$HOME/Library/Group Containers/group.com.apple.VoiceOver/Library/Preferences"
 
-          ln -sf "$VO_PORTABLE" "$GLOBAL_PREFS/com.apple.VoiceOver4.portable.scrd"
-          ln -sf "$VO_PORTABLE" "$GLOBAL_PREFS/com.apple.VoiceOver4.portable.scrd.vou"
-          ln -sf "$VO_PORTABLE" "$GLOBAL_PREFS/com.apple.VoiceOver4.portable.scro"
-          ln -sf "$VO_PORTABLE" "$GLOBAL_PREFS/com.apple.VoiceOver4.portable.scui"
           ln -sf "$VO_PORTABLE" "$GROUP_CONTAINER_PREFS/com.apple.VoiceOver4.portable.scrd"
           ln -sf "$VO_PORTABLE" "$GROUP_CONTAINER_PREFS/com.apple.VoiceOver4.portable.scrd.vou"
           ln -sf "$VO_PORTABLE" "$GROUP_CONTAINER_PREFS/com.apple.VoiceOver4.portable.scro"
           ln -sf "$VO_PORTABLE" "$GROUP_CONTAINER_PREFS/com.apple.VoiceOver4.portable.scui"
 
-      - name: Open & Close VoiceOver VoiceOver Utility
+      - name: Create Volume
         run: |
-          mkdir -p artifacts || true
-          /usr/bin/osascript start-vo-utility.applescript || true
-          sleep 5
-          screencapture artifacts/vo-utility-post-portable.png || true
-          /usr/bin/osascript stop-vo-utility.applescript || true
+          hdiutil create \
+            -fs APFS \
+            -volname GuidepupVoiceOverPreferences \
+            -srcfolder "./${{ matrix.os }}" \
+            -format UDRW \
+            -ov \
+            GuidepupVoiceOverPreferences.dmg
+
+          hdiutil attach \
+            GuidepupVoiceOverPreferences.dmg \
+            -mountpoint /Volumes/GuidepupVoiceOverPreferences
+
+      - name: Verify mount
+        run: |
+          ls -R /Volumes/GuidepupVoiceOverPreferences
 
       ## Verification Stages
 
