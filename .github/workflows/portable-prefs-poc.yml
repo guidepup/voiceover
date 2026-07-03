@@ -1,0 +1,167 @@
+name: Portable Preferences PoC
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  poc:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-14, macos-15, macos-26]
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Inject unique login greeting
+        id: greeting
+        run: |
+          SECRET=$(uuidgen)-$(openssl rand -hex 16)
+
+          DEFAULT_PLIST="./${{ matrix.os }}/VoiceOver/VoiceOver4.portable/default.plist"
+
+          /usr/libexec/PlistBuddy \
+            -c "Delete :loginGreeting" \
+            "$DEFAULT_PLIST" 2>/dev/null || true
+
+          /usr/libexec/PlistBuddy \
+            -c "Add :loginGreeting string $SECRET" \
+            "$DEFAULT_PLIST"
+
+          echo "secret=$SECRET" >> "$GITHUB_OUTPUT"
+
+          echo "Injected loginGreeting:"
+          /usr/libexec/PlistBuddy \
+            -c "Print :loginGreeting" \
+            "$DEFAULT_PLIST"
+
+      - name: Read portable identifier
+        id: portable
+        run: |
+          IDENTIFIER=$(
+            /usr/libexec/PlistBuddy \
+              -c "Print :identifier" \
+              "./${{ matrix.os }}/VoiceOver/VoiceOver4.portable/voidentifier"
+          )
+          echo "identifier=$IDENTIFIER" >> "$GITHUB_OUTPUT"
+
+      - name: Trust portable preferences
+        env:
+          IDENTIFIER: ${{ steps.portable.outputs.identifier }}
+        run: |
+          PLIST="$HOME/Library/Preferences/com.apple.VoiceOver4.local.plist"
+
+          # Ensure plist exists
+          plutil -create binary1 "$PLIST" 2>/dev/null || true
+
+          # lastTouchedKey
+          /usr/libexec/PlistBuddy -c "Delete :lastTouchedKey" "$PLIST" 2>/dev/null || true
+          /usr/libexec/PlistBuddy -c "Add :lastTouchedKey string $IDENTIFIER" "$PLIST"
+
+          # SCRCUserDefaultsAlwaysUsePortableIDs
+          /usr/libexec/PlistBuddy -c "Print :SCRCUserDefaultsAlwaysUsePortableIDs" "$PLIST" >/dev/null 2>&1 || {
+            /usr/libexec/PlistBuddy -c "Add :SCRCUserDefaultsAlwaysUsePortableIDs array" "$PLIST"
+          }
+
+          # portablePreferenceKeys
+          /usr/libexec/PlistBuddy -c "Print :portablePreferenceKeys" "$PLIST" >/dev/null 2>&1 || {
+            /usr/libexec/PlistBuddy -c "Add :portablePreferenceKeys array" "$PLIST"
+          }
+
+          # append if missing
+          for KEY in \
+            SCRCUserDefaultsAlwaysUsePortableIDs \
+            portablePreferenceKeys
+          do
+            if ! /usr/libexec/PlistBuddy -c "Print :$KEY" "$PLIST" | grep -Fxq "$IDENTIFIER"; then
+              INDEX=$(
+                /usr/libexec/PlistBuddy -c "Print :$KEY" "$PLIST" |
+                tail -n +2 |
+                wc -l |
+                tr -d ' '
+              )
+
+              /usr/libexec/PlistBuddy -c "Add :$KEY:$INDEX string $IDENTIFIER" "$PLIST"
+            fi
+          done
+
+      - name: Dump local preferences
+        run: |
+          plutil -p "$HOME/Library/Preferences/com.apple.VoiceOver4.local.plist"
+
+      - name: Convert plist xml to binary
+        run: |
+          plutil -convert binary1 "./${{ matrix.os }}/VoiceOver/VoiceOver4.portable/default.plist"
+          plutil -convert binary1 "./${{ matrix.os }}/VoiceOver/VoiceOver4.portable/master.plist"
+
+      - name: Create VoiceOverPreferences.dmg from "./${{ matrix.os }}/VoiceOver/VoiceOver4.portable"
+        run: |
+          hdiutil create \
+            -srcfolder "./${{ matrix.os }}/VoiceOver/VoiceOver4.portable" \
+            -volname VoiceOverPreferences \
+            -format UDZO \
+            -ov \
+            VoiceOverPreferences.dmg
+
+      - name: Attach portable preferences
+        run: |
+          hdiutil attach \
+            VoiceOverPreferences.dmg \
+            -mountpoint /Volumes/VoiceOverPreferences
+
+      - name: Verify mount
+        run: |
+          ls -R /Volumes/VoiceOverPreferences
+          test -f /Volumes/VoiceOverPreferences/default.plist
+          test -f /Volumes/VoiceOverPreferences/master.plist
+          test -f /Volumes/VoiceOverPreferences/voidentifier
+
+      - name: Launch & Verify VoiceOver Welcome Greeting
+        env:
+          EXPECTED: ${{ steps.greeting.outputs.secret }}
+        run: |
+          # Disable splash screen
+          defaults write com.apple.VoiceOverTraining doNotShowSplashScreen -bool true
+
+          sleep 1
+
+          mkdir -p artifacts || true
+
+          # Start VoiceOver
+          /System/Library/CoreServices/VoiceOver.app/Contents/MacOS/VoiceOverStarter &
+
+          for i in {1..10}; do
+            screencapture artifacts/vo-$i.png || true
+
+            ACTUAL=$(/usr/bin/osascript voiceOverPerform.applescript)
+
+            echo "$ACTUAL" > artifacts/last-phrase-$i.txt
+
+            if [ "$ACTUAL" = "$EXPECTED" ]; then
+              break
+            fi
+
+            sleep 1
+          done
+
+          echo "Expected: $EXPECTED"
+          echo "Actual:   $ACTUAL"
+          test "$ACTUAL" = "$EXPECTED"
+
+      - name: Cleanup
+        if: always()
+        run: |
+          kill -15 $(ps aux | egrep "[V]oiceOver.app/Contents/MacOS/VoiceOver launchd -s" | awk '{print $2}')
+          hdiutil detach /Volumes/VoiceOverPreferences || true
+          rm -f VoiceOverPreferences.dmg || true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        continue-on-error: true
+        with:
+          name: artifacts-${{ matrix.os }}
+          path: |
+            **/artifacts/**/*
