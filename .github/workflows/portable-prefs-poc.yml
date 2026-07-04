@@ -78,6 +78,10 @@ jobs:
           echo "$IDENTIFIER"
           echo "identifier=$IDENTIFIER" >> "$GITHUB_OUTPUT"
 
+      - name: Restart cfprefsd
+        run: |
+          killall cfprefsd
+
       - name: Trust portable preferences - group container preferences
         env:
           IDENTIFIER: ${{ steps.portable.outputs.identifier }}
@@ -121,6 +125,10 @@ jobs:
 
           plutil -convert xml1 -o - "$PLIST" || true
 
+      - name: Restart cfprefsd
+        run: |
+          killall cfprefsd
+
       - name: Create portable preferences symlinks
         run: |
           VO_PORTABLE="/Volumes/GuidepupVoiceOverPreferences/VoiceOver/VoiceOver4.portable"
@@ -130,6 +138,10 @@ jobs:
           ln -sf "$VO_PORTABLE" "$GROUP_CONTAINER_PREFS/com.apple.VoiceOver4.portable.scrd.vou"
           ln -sf "$VO_PORTABLE" "$GROUP_CONTAINER_PREFS/com.apple.VoiceOver4.portable.scro"
           ln -sf "$VO_PORTABLE" "$GROUP_CONTAINER_PREFS/com.apple.VoiceOver4.portable.scui"
+
+      - name: Restart cfprefsd
+        run: |
+          killall cfprefsd
 
       - name: Create Volume
         run: |

@@ -14,8 +14,27 @@
 	<integer>0</integer>
 	<key>SCREnableAppleScript</key>
 	<true/>
-	<key>lastTouchedKey</key>
-	<string>uuid-username</string>
+	<key>SCRUIPortablePreferencesDictionary</key>
+	<dict>
+		<key>DAMediaBSDName</key>
+		<string>disk3s1</string>
+		<key>SCRCUserDefaultsPortableDeviceKey</key>
+		<string>disk-uuid</string>
+		<key>SCRCUserDefaultsPortableDeviceModel</key>
+		<string>GuidepupVoiceOverPreferences</string>
+		<key>SCRCUserDefaultsPortableFullUserName</key>
+		<string>Guidepup</string>
+		<key>SCRCUserDefaultsPortableIconPath</key>
+		<string>/System/Library/Extensions/IOStorageFamily.kext/Contents/Resources/Removable.icns</string>
+		<key>SCRCUserDefaultsPortableIsIDisk</key>
+		<false/>
+		<key>SCRCUserDefaultsPortableIsRemote</key>
+		<true/>
+		<key>SCRCUserDefaultsPortablePreferencePath</key>
+		<string>/Volumes/GuidepupVoiceOverPreferences/VoiceOver/VoiceOver4.portable</string>
+		<key>SCRCUserDefaultsPortableVolumePath</key>
+		<string>/Volumes/GuidepupVoiceOverPreferences</string>
+	</dict>
 	<key>portablePreferenceKeys</key>
 	<array>
 		<string>uuid-username</string>
