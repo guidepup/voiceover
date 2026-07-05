@@ -21,38 +21,27 @@ jobs:
       - name: Setup OS for VO automation
         uses: guidepup/setup-action@0.21.0
 
-      ## Example global defaults
-
       - name: Disable Splash
         run: |
           defaults write com.apple.VoiceOverTraining doNotShowSplashScreen -bool true || true
-
-      - name: Enable AppleScript Control
-        run: |
-          defaults write com.apple.VoiceOver4/default SCREnableAppleScript -bool true || true
 
       - name: Set Default Greeting
         run: |
           defaults write com.apple.VoiceOver4/default loginGreeting -string "Default Greeting" || true
 
-      - name: Open & Close VoiceOver VoiceOver Utility
+      - name: Start VoiceOver To Trigger Group Container Creation
         run: |
-          mkdir -p artifacts || true
-          /usr/bin/osascript start-vo-utility.applescript || true
-          sleep 5
-          screencapture artifacts/vo-utility-pre-portable.png || true
-          /usr/bin/osascript stop-vo-utility.applescript || true
+          PLIST="$HOME/Library/Group Containers/group.com.apple.VoiceOver/Library/Preferences/com.apple.VoiceOver4.local.plist"
 
-      - name: Start & Stop VoiceOver
-        run: |
-          /System/Library/CoreServices/VoiceOver.app/Contents/MacOS/VoiceOverStarter &
-          sleep 5
-          mkdir -p artifacts || true
-          screencapture artifacts/started.png || true
-          kill -15 $(ps aux | egrep "[V]oiceOver.app/Contents/MacOS/VoiceOver launchd -s" | awk '{print $2}') || true
-          sleep 5
+          if [[ ! -f "$PLIST" ]]; then
+            /System/Library/CoreServices/VoiceOver.app/Contents/MacOS/VoiceOverStarter &
+
+            until [[ -f "$PLIST" ]]; do
+              sleep 0.5
+            done
+          fi
+
           /usr/bin/osascript stop-vo.applescript || true
-          sleep 5
 
       - name: Group Containers List
         run: |
@@ -80,21 +69,13 @@ jobs:
 
       - name: Restart cfprefsd
         run: |
-          killall cfprefsd
+          killall cfprefsd || true
 
-      - name: Trust portable preferences - group container preferences
+      - name: Trust Portable Preferences
         env:
           IDENTIFIER: ${{ steps.portable.outputs.identifier }}
         run: |
           PLIST="$HOME/Library/Group Containers/group.com.apple.VoiceOver/Library/Preferences/com.apple.VoiceOver4.local.plist"
-
-          # SCRCUserDefaultsAllowAirPlay
-          /usr/libexec/PlistBuddy -c "Delete :SCRCUserDefaultsAllowAirPlay" "$PLIST" 2>/dev/null || true
-          /usr/libexec/PlistBuddy -c "Add :SCRCUserDefaultsAllowAirPlay bool true" "$PLIST"
-
-          # lastTouchedKey
-          /usr/libexec/PlistBuddy -c "Delete :lastTouchedKey" "$PLIST" 2>/dev/null || true
-          /usr/libexec/PlistBuddy -c "Add :lastTouchedKey string $IDENTIFIER" "$PLIST"
 
           # SCRCUserDefaultsAlwaysUsePortableIDs
           /usr/libexec/PlistBuddy -c "Print :SCRCUserDefaultsAlwaysUsePortableIDs" "$PLIST" >/dev/null 2>&1 || {
@@ -127,7 +108,7 @@ jobs:
 
       - name: Restart cfprefsd
         run: |
-          killall cfprefsd
+          killall cfprefsd || true
 
       - name: Create portable preferences symlinks
         run: |
@@ -141,7 +122,7 @@ jobs:
 
       - name: Restart cfprefsd
         run: |
-          killall cfprefsd
+          killall cfprefsd || true
 
       - name: Create Volume
         run: |
@@ -163,6 +144,15 @@ jobs:
 
       ## Verification Stages
 
+      - name: Open & Close VoiceOver Utility
+        run: |
+          mkdir -p artifacts || true
+          /usr/bin/osascript start-vo-utility.applescript || true
+          sleep 5
+          screencapture artifacts/vo-utility-end.png || true
+          /usr/bin/osascript stop-vo-utility.applescript || true
+          sleep 1
+
       - name: Launch & Verify VoiceOver Welcome Greeting
         run: |
           mkdir -p artifacts || true
@@ -175,21 +165,11 @@ jobs:
             screencapture artifacts/vo-$i.png || true
             ACTUAL=$(/usr/bin/osascript voiceOverPerform.applescript 2>/dev/null || true)
             echo "Spoken Phrase: $ACTUAL"
-            sleep 0.01
+            sleep 0.5
           done
 
-          kill -15 $(ps aux | egrep "[V]oiceOver.app/Contents/MacOS/VoiceOver launchd -s" | awk '{print $2}') || true
-          sleep 5
           /usr/bin/osascript stop-vo.applescript || true
-          sleep 5
-
-      - name: Open & Close VoiceOver VoiceOver Utility
-        run: |
-          mkdir -p artifacts || true
-          /usr/bin/osascript start-vo-utility.applescript || true
-          sleep 5
-          screencapture artifacts/vo-utility-end.png || true
-          /usr/bin/osascript stop-vo-utility.applescript || true
+          sleep 1
 
       - name: Group Containers List
         run: |
