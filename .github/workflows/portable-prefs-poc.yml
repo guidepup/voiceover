@@ -82,27 +82,17 @@ jobs:
             /usr/libexec/PlistBuddy -c "Add :SCRCUserDefaultsAlwaysUsePortableIDs array" "$PLIST"
           }
 
-          # portablePreferenceKeys
-          /usr/libexec/PlistBuddy -c "Print :portablePreferenceKeys" "$PLIST" >/dev/null 2>&1 || {
-            /usr/libexec/PlistBuddy -c "Add :portablePreferenceKeys array" "$PLIST"
-          }
-
           # append if missing
-          for KEY in \
-            SCRCUserDefaultsAlwaysUsePortableIDs \
-            portablePreferenceKeys
-          do
-            if ! /usr/libexec/PlistBuddy -c "Print :$KEY" "$PLIST" | grep -Fxq "$IDENTIFIER"; then
-              INDEX=$(
-                /usr/libexec/PlistBuddy -c "Print :$KEY" "$PLIST" |
-                tail -n +2 |
-                wc -l |
-                tr -d ' '
-              )
+          if ! /usr/libexec/PlistBuddy -c "Print :SCRCUserDefaultsAlwaysUsePortableIDs" "$PLIST" | grep -Fxq "$IDENTIFIER"; then
+            INDEX=$(
+              /usr/libexec/PlistBuddy -c "Print :SCRCUserDefaultsAlwaysUsePortableIDs" "$PLIST" |
+              tail -n +2 |
+              wc -l |
+              tr -d ' '
+            )
 
-              /usr/libexec/PlistBuddy -c "Add :$KEY:$INDEX string $IDENTIFIER" "$PLIST"
-            fi
-          done
+            /usr/libexec/PlistBuddy -c "Add :SCRCUserDefaultsAlwaysUsePortableIDs:$INDEX string $IDENTIFIER" "$PLIST"
+          fi
 
           plutil -convert xml1 -o - "$PLIST" || true
 
