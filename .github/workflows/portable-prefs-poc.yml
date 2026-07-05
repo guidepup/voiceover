@@ -13,9 +13,8 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-14, macos-15, macos-26]
-    steps:
-      ## Environment setup
 
+    steps:
       - uses: actions/checkout@v6
 
       - name: Setup OS for VO automation
@@ -29,9 +28,24 @@ jobs:
         run: |
           defaults write com.apple.VoiceOver4/default loginGreeting -string "Default Greeting" || true
 
-      - name: Start VoiceOver To Trigger Group Container Creation
+      - name: Determine VoiceOver Preferences Location
+        id: vo-path
+        shell: bash
         run: |
-          PLIST="$HOME/Library/Group Containers/group.com.apple.VoiceOver/Library/Preferences/com.apple.VoiceOver4.local.plist"
+          case "${{ matrix.os }}" in
+            macos-14)
+              PREFS_DIR="$HOME/Library/Preferences"
+              ;;
+            *)
+              PREFS_DIR="$HOME/Library/Group Containers/group.com.apple.VoiceOver/Library/Preferences"
+              ;;
+          esac
+
+          echo "prefs_dir=$PREFS_DIR" >> "$GITHUB_OUTPUT"
+
+      - name: Start VoiceOver To Trigger Preferences Creation (If Needed)
+        run: |
+          PLIST="${{ steps.vo-path.outputs.prefs_dir }}/com.apple.VoiceOver4.local.plist"
 
           if [[ ! -f "$PLIST" ]]; then
             /System/Library/CoreServices/VoiceOver.app/Contents/MacOS/VoiceOverStarter &
@@ -43,20 +57,11 @@ jobs:
 
           /usr/bin/osascript stop-vo.applescript || true
 
-      - name: Group Containers List
+      - name: Read com.apple.VoiceOver4.local.plist
         run: |
-          ls -la "$HOME/Library/Group Containers/" || true
-          ls -laR "$HOME/Library/Group Containers/group.com.apple.VoiceOver/" || true
-          plutil -convert xml1 -o - "$HOME/Library/Group Containers/group.com.apple.VoiceOver/Library/Preferences/com.apple.VoiceOver4.local.plist" || true
+          plutil -convert xml1 -o - "${{ steps.vo-path.outputs.prefs_dir }}/com.apple.VoiceOver4.local.plist" || true
 
-      ## Automated portable preferences enablement
-
-      - name: Convert plist xml to binary
-        run: |
-          plutil -convert binary1 "./${{ matrix.os }}/VoiceOver/VoiceOver4.portable/default.plist"
-          plutil -convert binary1 "./${{ matrix.os }}/VoiceOver/VoiceOver4.portable/master.plist"
-
-      - name: Read portable identifier
+      - name: Read Portable Identifier
         id: portable
         run: |
           IDENTIFIER=$(
@@ -75,14 +80,12 @@ jobs:
         env:
           IDENTIFIER: ${{ steps.portable.outputs.identifier }}
         run: |
-          PLIST="$HOME/Library/Group Containers/group.com.apple.VoiceOver/Library/Preferences/com.apple.VoiceOver4.local.plist"
+          PLIST="${{ steps.vo-path.outputs.prefs_dir }}/com.apple.VoiceOver4.local.plist"
 
-          # SCRCUserDefaultsAlwaysUsePortableIDs
           /usr/libexec/PlistBuddy -c "Print :SCRCUserDefaultsAlwaysUsePortableIDs" "$PLIST" >/dev/null 2>&1 || {
             /usr/libexec/PlistBuddy -c "Add :SCRCUserDefaultsAlwaysUsePortableIDs array" "$PLIST"
           }
 
-          # append if missing
           if ! /usr/libexec/PlistBuddy -c "Print :SCRCUserDefaultsAlwaysUsePortableIDs" "$PLIST" | grep -Fxq "$IDENTIFIER"; then
             INDEX=$(
               /usr/libexec/PlistBuddy -c "Print :SCRCUserDefaultsAlwaysUsePortableIDs" "$PLIST" |
@@ -100,15 +103,15 @@ jobs:
         run: |
           killall cfprefsd || true
 
-      - name: Create portable preferences symlinks
+      - name: Create Portable Preferences Symlinks
         run: |
           VO_PORTABLE="/Volumes/GuidepupVoiceOverPreferences/VoiceOver/VoiceOver4.portable"
-          GROUP_CONTAINER_PREFS="$HOME/Library/Group Containers/group.com.apple.VoiceOver/Library/Preferences"
+          PREFS_DIR="${{ steps.vo-path.outputs.prefs_dir }}"
 
-          ln -sf "$VO_PORTABLE" "$GROUP_CONTAINER_PREFS/com.apple.VoiceOver4.portable.scrd"
-          ln -sf "$VO_PORTABLE" "$GROUP_CONTAINER_PREFS/com.apple.VoiceOver4.portable.scrd.vou"
-          ln -sf "$VO_PORTABLE" "$GROUP_CONTAINER_PREFS/com.apple.VoiceOver4.portable.scro"
-          ln -sf "$VO_PORTABLE" "$GROUP_CONTAINER_PREFS/com.apple.VoiceOver4.portable.scui"
+          ln -sf "$VO_PORTABLE" "$PREFS_DIR/com.apple.VoiceOver4.portable.scrd"
+          ln -sf "$VO_PORTABLE" "$PREFS_DIR/com.apple.VoiceOver4.portable.scrd.vou"
+          ln -sf "$VO_PORTABLE" "$PREFS_DIR/com.apple.VoiceOver4.portable.scro"
+          ln -sf "$VO_PORTABLE" "$PREFS_DIR/com.apple.VoiceOver4.portable.scui"
 
       - name: Restart cfprefsd
         run: |
@@ -116,6 +119,9 @@ jobs:
 
       - name: Create Volume
         run: |
+          plutil -convert binary1 "./${{ matrix.os }}/VoiceOver/VoiceOver4.portable/default.plist"
+          plutil -convert binary1 "./${{ matrix.os }}/VoiceOver/VoiceOver4.portable/master.plist"
+
           hdiutil create \
             -fs APFS \
             -volname GuidepupVoiceOverPreferences \
@@ -128,11 +134,7 @@ jobs:
             GuidepupVoiceOverPreferences.dmg \
             -mountpoint /Volumes/GuidepupVoiceOverPreferences
 
-      - name: Verify mount
-        run: |
           ls -R /Volumes/GuidepupVoiceOverPreferences
-
-      ## Verification Stages
 
       - name: Open & Close VoiceOver Utility
         run: |
@@ -147,27 +149,18 @@ jobs:
         run: |
           mkdir -p artifacts || true
 
-          # Start VoiceOver
           /System/Library/CoreServices/VoiceOver.app/Contents/MacOS/VoiceOverStarter &
 
           for i in {1..20}; do
             echo "Attempt: $i"
-            screencapture artifacts/vo-$i.png || true
             ACTUAL=$(/usr/bin/osascript voiceOverPerform.applescript 2>/dev/null || true)
             echo "Spoken Phrase: $ACTUAL"
-            sleep 0.5
+            screencapture artifacts/vo-$i.png || true
+            sleep 0.1
           done
 
           /usr/bin/osascript stop-vo.applescript || true
           sleep 1
-
-      - name: Group Containers List
-        run: |
-          ls -la "$HOME/Library/Group Containers/" || true
-          ls -laR "$HOME/Library/Group Containers/group.com.apple.VoiceOver/" || true
-          plutil -convert xml1 -o - "$HOME/Library/Group Containers/group.com.apple.VoiceOver/Library/Preferences/com.apple.VoiceOver4.local.plist" || true
-
-      ## Cleanup
 
       - name: Cleanup
         if: always()
