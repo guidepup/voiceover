@@ -25,11 +25,11 @@ jobs:
 
           hdiutil create \
             -fs APFS \
-            -volname guidepup-preferences-${{ matrix.os }} \
+            -volname guidepup-voiceover-preferences-${{ matrix.os }} \
             -srcfolder "./${{ matrix.os }}" \
             -format UDRW \
             -ov \
-            guidepup-preferences-${{ matrix.os }}.dmg
+            guidepup-voiceover-preferences-${{ matrix.os }}.dmg
 
       - name: Publish
         env:
@@ -37,5 +37,5 @@ jobs:
         run: |
           gh release upload \
             "${{ github.event.release.tag_name }}" \
-            guidepup-preferences-${{ matrix.os }}.dmg \
+            guidepup-voiceover-preferences-${{ matrix.os }}.dmg \
             --clobber
