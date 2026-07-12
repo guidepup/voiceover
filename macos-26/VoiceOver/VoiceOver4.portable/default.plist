@@ -270,7 +270,7 @@
 	<key>SCRConfigurationTextUnderMouseHoverDelayInterval</key>
 	<real>0.4</real>
 	<key>SCRContextualHelpDelayInSeconds</key>
-	<real>0.5</real>
+	<real>1.0</real>
 	<key>SCRDisplayBrailleEnabled</key>
 	<integer>2</integer>
 	<key>SCRDisplayTextEnabled</key>

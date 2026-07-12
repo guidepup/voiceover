@@ -1,4 +1,4 @@
-name: Portable Preferences PoC
+name: Test
 
 on:
   workflow_dispatch:
@@ -69,7 +69,6 @@ jobs:
               -c "Print :identifier" \
               "./${{ matrix.os }}/VoiceOver/VoiceOver4.portable/voidentifier"
           )
-          echo "$IDENTIFIER"
           echo "identifier=$IDENTIFIER" >> "$GITHUB_OUTPUT"
 
       - name: Restart cfprefsd
@@ -153,7 +152,7 @@ jobs:
 
           for i in {1..20}; do
             echo "Attempt: $i"
-            ACTUAL=$(/usr/bin/osascript voiceOverPerform.applescript 2>/dev/null || true)
+            ACTUAL=$(/usr/bin/osascript vo-return-last-phrase.applescript 2>/dev/null || true)
             echo "Spoken Phrase: $ACTUAL"
             screencapture artifacts/vo-$i.png || true
             sleep 0.1
