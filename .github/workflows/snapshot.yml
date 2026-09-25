@@ -19,10 +19,11 @@ jobs:
 
       - name: Create DMG
         run: |
-          diskutil image create blank \
+          hdiutil create \
             -size 256m \
-            -fs ExFAT \
-            -volumeName VoiceOverPreferences \
+            -fs HFS+ \
+            -volname VoiceOverPreferences \
+            -ov \
             VoiceOverPreferences.dmg
 
       - name: Attach DMG
