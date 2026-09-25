@@ -21,7 +21,7 @@ jobs:
         run: |
           diskutil image create blank \
             -size 256m \
-            -fs APFS \
+            -fs HFS+ \
             -volumeName VoiceOverPreferences \
             VoiceOverPreferences.dmg
 
