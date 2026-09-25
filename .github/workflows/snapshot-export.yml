@@ -57,7 +57,7 @@ jobs:
 
       - name: Verify exported preferences
         run: |
-          ls -la "$HOME/Documents"
+          ls -laR "$HOME/Documents"
           find "$HOME/Documents" -maxdepth 2 -print
 
       - name: Copy snapshot
