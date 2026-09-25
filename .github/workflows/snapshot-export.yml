@@ -57,8 +57,8 @@ jobs:
 
       - name: Verify exported preferences
         run: |
-          test -d "$HOME/Documents/VoiceOver Archive"
-          find "$HOME/Documents/VoiceOver Archive" -maxdepth 2 -print
+          ls -la "$HOME/Documents"
+          find "$HOME/Documents" -maxdepth 2 -print
 
       - name: Copy snapshot
         run: |
