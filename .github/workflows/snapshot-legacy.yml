@@ -1,4 +1,4 @@
-name: Snapshot VoiceOver
+name: Snapshot Legacy VoiceOver
 
 on:
   workflow_dispatch:
