@@ -55,17 +55,16 @@ jobs:
         run: |
           screencapture -x artifacts/after-save.png || true
 
-      - name: Verify exported preferences
+      - name: Log exported preferences
         run: |
           ls -laR "$HOME/Documents"
-          find "$HOME/Documents" -maxdepth 2 -print
 
       - name: Copy snapshot
         run: |
           mkdir -p "${{ matrix.os }}/VoiceOver"
 
           rsync -a \
-            "$HOME/Documents/VoiceOver Archive/" \
+            "$HOME/Documents/VoiceOver Archive.voprefs" \
             "${{ matrix.os }}/VoiceOver/"
 
       - uses: actions/upload-artifact@v4
