@@ -45,16 +45,15 @@ jobs:
         run: |
           osascript <<'APPLESCRIPT'
           tell application "System Events"
-            delay 1
-
             set frontProcess to first application process whose frontmost is true
 
             tell frontProcess
-              repeat until exists button "Save" of window 1
-                delay 0.2
-              end repeat
+              log "PROCESS: " & name
 
-              click button "Save" of window 1
+              repeat with w in windows
+                log "WINDOW: " & name of w
+                log entire contents of w
+              end repeat
             end tell
           end tell
           APPLESCRIPT
