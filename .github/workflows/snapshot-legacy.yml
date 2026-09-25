@@ -13,33 +13,27 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [xcode-27]
+        os: [macos-15, macos-26]
     steps:
       - uses: actions/checkout@v6
 
       - name: Create DMG
         run: |
-          diskutil image create blank \
+          hdiutil create \
             -size 256m \
             -fs APFS \
-            -volumeName VoiceOverPreferences \
+            -volname VoiceOverPreferences \
+            -ov \
             VoiceOverPreferences.dmg
 
       - name: Attach DMG
         run: |
-          mkdir -p artifacts || true
-
-          diskutil image attach VoiceOverPreferences.dmg
-          diskutil info /Volumes/VoiceOverPreferences
-          screencapture artifacts/attached.png || true
-
-          open /Volumes/VoiceOverPreferences
-          screencapture artifacts/finder-open.png || true
-          sleep 10
+          hdiutil attach VoiceOverPreferences.dmg
 
       - name: Configure portable preferences
         run: |
           /usr/bin/osascript start-portable-preferences.applescript || true
+          mkdir -p artifacts || true
           screencapture artifacts/finished.png || true
 
       - uses: actions/upload-artifact@v4
@@ -60,7 +54,7 @@ jobs:
       - name: Cleanup
         if: always()
         run: |
-          diskutil eject /Volumes/VoiceOverPreferences || true
+          hdiutil detach /Volumes/VoiceOverPreferences || true
           rm -f VoiceOverPreferences.dmg || true
           rm -rf artifacts || true
 
