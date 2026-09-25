@@ -1,0 +1,134 @@
+name: Snapshot VoiceOver - Export
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  snapshot:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [xcode-27]
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Open VoiceOver Utility
+        run: |
+          open -a "VoiceOver Utility"
+          sleep 3
+
+      - name: Export VoiceOver preferences
+        run: |
+          osascript <<'APPLESCRIPT'
+          tell application "System Events"
+            tell process "VoiceOver Utility"
+              set frontmost to true
+              keystroke "e" using {shift down, command down}
+            end tell
+          end tell
+          APPLESCRIPT
+
+          sleep 3
+
+      - name: Screenshot export dialog
+        run: |
+          mkdir -p artifacts
+          screencapture -x artifacts/export-dialog.png || true
+
+      - name: Configure export location and save
+        run: |
+          osascript <<'APPLESCRIPT'
+          tell application "System Events"
+            tell process "VoiceOver Utility"
+              set frontmost to true
+
+              -- The export action opens a standard macOS save panel.
+              -- Set the filename explicitly.
+              tell window 1
+                repeat until exists sheet 1
+                  delay 0.2
+                end repeat
+
+                tell sheet 1
+                  try
+                    set value of text field 1 to "VoiceOver Archive.voprefs"
+                  end try
+
+                  -- Save into the GitHub workspace.
+                  keystroke "g" using {command down, shift down}
+                  delay 0.5
+
+                  if exists sheet 1 then
+                    tell sheet 1
+                      try
+                        set value of text field 1 to "$GITHUB_WORKSPACE"
+                        keystroke return
+                      end try
+                    end tell
+                  end if
+
+                  delay 1
+                  click button "Save"
+                end tell
+              end tell
+            end tell
+          end tell
+          APPLESCRIPT
+
+          sleep 3
+
+      - name: Screenshot after save
+        run: |
+          screencapture -x artifacts/after-save.png || true
+
+      - name: Verify archive
+        run: |
+          find "$GITHUB_WORKSPACE" -maxdepth 2 \
+            -name '*.voprefs' \
+            -print
+
+          test -e "$GITHUB_WORKSPACE/VoiceOver Archive.voprefs"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        continue-on-error: true
+        with:
+          name: artifacts-${{ matrix.os }}
+          path: |
+            **/artifacts/**/*
+
+      - name: Copy snapshot
+        run: |
+          mkdir -p "${{ matrix.os }}/VoiceOver"
+
+          rsync -a \
+            "VoiceOver Archive.voprefs/" \
+            "${{ matrix.os }}/VoiceOver/"
+
+      - name: Cleanup
+        if: always()
+        run: |
+          rm -rf "VoiceOver Archive.voprefs" || true
+          rm -rf artifacts || true
+
+      - name: Commit and create PR
+        uses: peter-evans/create-pull-request@v8
+        with:
+          commit-message: "feat: update ${{ matrix.os }} voiceover preferences snapshot"
+          committer: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+          author: ${{ github.actor }} <${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com>
+          branch: voiceover-snapshot-${{ matrix.os }}
+          branch-suffix: short-commit-hash
+          delete-branch: true
+          title: "Update VoiceOver Preferences Snapshot: ${{ matrix.os }}"
+          body: |
+            Automated update.
+          assignees: cmorten
+          reviewers: cmorten
+          draft: false
