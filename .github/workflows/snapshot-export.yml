@@ -45,16 +45,13 @@ jobs:
         run: |
           osascript <<'APPLESCRIPT'
           tell application "System Events"
-            set frontProcess to first application process whose frontmost is true
-
-            tell frontProcess
-              log "PROCESS: " & name
-
-              repeat with w in windows
-                log "WINDOW: " & name of w
-                log entire contents of w
-              end repeat
-            end tell
+            repeat with p in application processes
+              try
+                if exists (button "Save" of entire contents of windows of p) then
+                  log "FOUND SAVE IN: " & name of p
+                end if
+              end try
+            end repeat
           end tell
           APPLESCRIPT
 
