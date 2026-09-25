@@ -45,17 +45,11 @@ jobs:
         run: |
           osascript <<'APPLESCRIPT'
           tell application "System Events"
-            repeat with p in application processes
-              try
-                if exists (button "Save" of entire contents of windows of p) then
-                  log "FOUND SAVE IN: " & name of p
-                end if
-              end try
-            end repeat
+            keystroke return
           end tell
           APPLESCRIPT
 
-          sleep 3
+          sleep 10
 
       - name: Screenshot after save
         run: |
