@@ -19,9 +19,9 @@ This repository provides:
 
 Each GitHub Release publishes DMG assets for every supported macOS version, for example:
 
-- `guidepup-voiceover-preferences-macos-14.dmg`
 - `guidepup-voiceover-preferences-macos-15.dmg`
 - `guidepup-voiceover-preferences-macos-26.dmg`
+- `guidepup-voiceover-preferences-xcode-27.dmg`
 
 These assets are consumed by `@guidepup/setup` and `@guidepup/guidepup` to provide a consistent VoiceOver environment during automation.
 

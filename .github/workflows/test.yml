@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-14, macos-15, macos-26]
+        os: [macos-15, macos-26, xcode-27]
 
     steps:
       - uses: actions/checkout@v6
@@ -32,15 +32,7 @@ jobs:
         id: vo-path
         shell: bash
         run: |
-          case "${{ matrix.os }}" in
-            macos-14)
-              PREFS_DIR="$HOME/Library/Preferences"
-              ;;
-            *)
-              PREFS_DIR="$HOME/Library/Group Containers/group.com.apple.VoiceOver/Library/Preferences"
-              ;;
-          esac
-
+          PREFS_DIR="$HOME/Library/Group Containers/group.com.apple.VoiceOver/Library/Preferences"
           echo "prefs_dir=$PREFS_DIR" >> "$GITHUB_OUTPUT"
 
       - name: Start VoiceOver To Trigger Preferences Creation (If Needed)
