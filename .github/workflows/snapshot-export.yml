@@ -45,10 +45,16 @@ jobs:
         run: |
           osascript <<'APPLESCRIPT'
           tell application "System Events"
-            tell process "VoiceOver Utility"
-              set frontmost to true
-              delay 1
-              click button "Save"
+            delay 1
+
+            set frontProcess to first application process whose frontmost is true
+
+            tell frontProcess
+              repeat until exists button "Save" of window 1
+                delay 0.2
+              end repeat
+
+              click button "Save" of window 1
             end tell
           end tell
           APPLESCRIPT
